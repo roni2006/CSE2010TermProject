@@ -19,12 +19,11 @@ import java.util.*;
 
 public class ScrabblePlayer
 {
-    Trie tree = new Trie();
+    //Trie tree = new Trie();
     // initialize ScrabblePlayer with a file of English words
     public ScrabblePlayer(String wordFile)
     
     {
-        
         final File inputFile = new File(wordFile);
         Scanner inputData;
         try {
@@ -33,12 +32,11 @@ public class ScrabblePlayer
                 final String str = inputData.nextLine();
                 tree.insert(str);
             }
-            tree.compress();
+            //tree.compress();
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
     }
 
     // based on the board and available letters, 
