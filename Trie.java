@@ -1,17 +1,22 @@
 
 public class Trie {
+    private static final byte OFFSET = 13; //(Char.hash + OFFSET) % ALPHABET.length = alphabet.indexOf(Char)
+    private static final char[] ALPHABET = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+                                            'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+                                            'U', 'V', 'W', 'X', 'Y', 'Z'};
     public static class Entry implements Comparable<Entry> {
-        char element;
+        byte element;
         boolean isWordEnd = false;
-		final int prefixLength;
+		final byte prefixLength;
+		Entry parent;
         MyList<Entry> children = new MyList<Entry>();
-        Entry(final char theElement, final Entry theParent) {
-            element = theElement;
+        Entry(final Character theElement, final Entry theParent) {
+            element = (byte) (theElement.hashCode());
 			parent = theParent;
 			if (parent == null) {
 				prefixLength = -1;
 			} else {
-				prefixLength = parent.prefixLength + 1;
+				prefixLength = (byte) (parent.prefixLength + 1);
 			}
         }
 		Entry(final char theElement) {
@@ -19,13 +24,14 @@ public class Trie {
 		}
         @Override
         public int compareTo(Entry other) {
-            return Character.compare(element, other.element);
-        }
-        public void display() {
-            System.out.printf("%s:%s%n", element, children);
+            return element - other.element;
         }
         public String toString() {
-            return String.valueOf(element);
+            if (parent == null) {
+                return "";
+            } else {
+                return String.valueOf(ALPHABET[(element + OFFSET) % ALPHABET.length]);
+            }
         }
     }
     private final Entry root;
@@ -38,7 +44,7 @@ public class Trie {
     private void insert(final String word, final int index, final Entry current) {
         final MyList<Entry> kids = current.children;
         final char element = word.charAt(index);
-        final Entry next = kids.insert(new Entry(element), current);
+        final Entry next = kids.insert(new Entry(element, current));
         if (index < word.length() - 1) {
             insert(word, index + 1, next);
         } else {
@@ -57,19 +63,5 @@ public class Trie {
 			display(c, s + e);
 		}
 		//System.out.println();
-	}
-	public void addWords(char c, MyList<String> list, int spaceBefore, int spaceAfter, byte[] hand) {
-		for (Entry e : root.children) {
-			if (e.element == 'c') {
-				addWords(e, list, spaceBefore, spaceAfter, hand, c);
-			}
-		}
-	}
-	private void addWords(Entry e, MyList<String> list,  int spaceBefore, int spaceAfter, byte[] hand, String s) {
-		for (Entry c : e.children) {
-			if (c.element == 'c') {
-				addWords(c, list, spaceBefore, spaceAfter, hand, c);
-			}
-		}
 	}
 }

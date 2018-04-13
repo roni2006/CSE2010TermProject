@@ -15,14 +15,14 @@ public class Test {
     public static void main(final String[] args) throws FileNotFoundException {
         final File inputFile = new File(args[0]);
         final Scanner inputData = new Scanner(inputFile);
-        Trie1 tree = new Trie1();
+        Trie tree = new Trie();
         while (inputData.hasNextLine()) {
             final String str = inputData.nextLine();
             if (str.length() > 1  && str.length() < 9) {
                 tree.insert(str.toUpperCase());
             }
         }
-        //tree.display();
+        tree.display();
         long memory = peakMemoryUsage();
         System.out.println(NumberFormat.getNumberInstance(Locale.US).format(memory));
     }
@@ -39,6 +39,7 @@ public class Test {
     }
     return total;
     }
+	/*
 	public static MyList<String> findAllPossibleWords(final Trie tree, final char[] tilesInHand, final char[] tilesOnBoard,
 													  final int spaceBefore, final int spaceAfter, final MyList<String> list) {
 		for (char c : tilesOnBoard) {
@@ -88,4 +89,5 @@ public class Test {
 			return Character.toString(board[row][col]);
 		}
 	}
+	*/
 }

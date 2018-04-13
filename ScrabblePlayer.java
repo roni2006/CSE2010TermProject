@@ -17,12 +17,11 @@ import java.io.FileNotFoundException;
 import java.util.*;
 
 
-public class ScrabblePlayer
-{
-    //Trie tree = new Trie();
+public class ScrabblePlayer {
+    Trie tree = new Trie();
     // initialize ScrabblePlayer with a file of English words
     public ScrabblePlayer(String wordFile)
-    
+
     {
         final File inputFile = new File(wordFile);
         Scanner inputData;

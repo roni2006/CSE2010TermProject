@@ -1,14 +1,7 @@
-Test:
-Used to test each the functions and peak memory usage
+TO DO
+Trie.java
+	List<Entry> for each letter
+Find Possible Words
+Find Points for Word
 
-Need to Do
-
-Trie:
-Implement something to mark a node as the end of a word
-
-ScrabblePlayer:
-getScrabbleWord(char[][] board, char[] availibleLetters)
-
-Notes:
-We don't actually know the words location. We need to find it.
-Then we have to find possible words
+	
