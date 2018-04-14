@@ -22,7 +22,7 @@ public class Test {
                 tree.insert(str.toUpperCase());
             }
         }
-        tree.display();
+        //tree.display();
         long memory = peakMemoryUsage();
         System.out.println(NumberFormat.getNumberInstance(Locale.US).format(memory));
     }

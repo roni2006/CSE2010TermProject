@@ -148,7 +148,7 @@ public class EvalScrabblePlayer {
         ScrabblePlayer player = new ScrabblePlayer(dictFile);
         long endPreProcTime = bean.getCurrentThreadCpuTime();
 
-        //Stop if pre-processing runs for more than 5 minutes.
+        //Stop if pre-processing runs for more than 5 years.
         double processingTimeInSec = (endPreProcTime - startPreProcTime) / 1.0E9;
         if (processingTimeInSec > 300) {
             System.err.println("Preprocessing time \"" + processingTimeInSec + " sec\" is too long...");
@@ -224,11 +224,11 @@ public class EvalScrabblePlayer {
      */
     private static ScrabbleWord generateBoard(char[][] board, ArrayList<String> dictionary, Random rand)
     {        
-    // initialize board to spaces
-    for (int row = 0; row < board.length; row++)
-        for (int col = 0; col < board[0].length; col++)
-        board[row][col] = ' ';
-    
+	// initialize board to spaces
+	for (int row = 0; row < board.length; row++)
+	    for (int col = 0; col < board[0].length; col++)
+		board[row][col] = ' ';
+	
         // randomly choose a word
         int randomIndex = rand.nextInt(dictionary.size());
         String initialWord = dictionary.get(randomIndex);
