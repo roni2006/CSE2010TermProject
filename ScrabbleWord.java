@@ -13,9 +13,11 @@
   */
 
 public class ScrabbleWord implements Comparable<ScrabbleWord> {
+    private static final byte OFFSET = 13;    //(Char.hash + OFFSET) % ALPHABET.length = alphabet.indexOf(Char)
+    
     private static final char[] LETTERS =
-    {'_', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-     'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+    {'_', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+     'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
     
     private static final int[] LETTERS_SCORE =
     {0, 1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3,
@@ -107,50 +109,16 @@ public class ScrabbleWord implements Comparable<ScrabbleWord> {
         
         for (int i = 0; i < str.length(); i++)
         {
-            char letterInWord = str.charAt(i);
+            Character letterInWord = str.charAt(i);
+            
+            byte element = (byte) letterInWord.hashCode();
+            int index = (element + OFFSET) % LETTERS.length;
+            
             
             // find the score for this letter
             int letterPoints = 0;
-            for (char tempChar: LETTERS)
-            {
-                if (tempChar == letterInWord)
-                    letterPoints = LETTERS_SCORE[tempChar];
-            }
-            
-            //System.out.printf("The %d th letter of %s is %c: %d points, ", i, str, letterInWord, letterPoints);
-            
-            /*
-            //System.out.printf("pos (row, col): (%d, %d), ", rowID, colID);
-            // find the score on board
-            String position = Integer.toString(rowID) + Integer.toString(colID);
-            String bonusFromBoard = "";
-            
-            // find the score on board if exist
-            for (int j = 0; j < BONUS_POS.length; j++)
-            {
-                if (position.equals(BONUS_POS[j]))
-                    bonusFromBoard = BONUS[j];
-            }
-            
-            // double/triple letter score
-            if (bonusFromBoard.equals("2L"))
-                letterPoints = letterPoints * 2;
-            else if (bonusFromBoard.equals("3L"))
-                letterPoints = letterPoints * 3;
-            // double/triple word score
-            else if (bonusFromBoard.equals("2W"))
-                bonusForWord = bonusForWord * 2;
-            else if (bonusFromBoard.equals("3W"))
-                bonusForWord = bonusForWord * 3;
-            else
-                bonusForWord = bonusForWord * 1;
-            
-            // move to the next cell
-            if (playerWord.getOrientation() == 'h')
-                colID++;
-            else
-                rowID++;
-            */
+            if (letterInWord == LETTERS[index])
+                letterPoints = LETTERS_SCORE[index];
             // sum them up
             totalScore = totalScore + letterPoints;
                 
