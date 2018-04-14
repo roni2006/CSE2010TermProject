@@ -15,8 +15,7 @@
 import java.util.*;
 
 
-public class ScrabbleWord
-{
+public class ScrabbleWord implements Comparable<ScrabbleWord> {
     private String  word;  // word
     private int     startRow, startCol;   // starting row and column of the word
     private char    orientation;  // v for vertical, h for horizontal
@@ -84,5 +83,20 @@ public class ScrabbleWord
     public int getOrientation()
     {
     return orientation;
+    }
+
+    @Override
+    public int compareTo(ScrabbleWord other) {
+        final int pointDifference = getPoints() - other.getPoints();
+        if (pointDifference == 0) {
+            //TODO determine how to order in this case
+            return 0;
+        } else {
+            return pointDifference;
+        }
+    }
+    private int getPoints() {
+        // TODO Auto-generated method stub
+        return 0;
     }
 }

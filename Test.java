@@ -7,11 +7,8 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
-import java.io.BufferedInputStream;
 
 public class Test {
-	private static final Scanner STDIN =
-            new Scanner(new BufferedInputStream(System.in));
     public static void main(final String[] args) throws FileNotFoundException {
         final File inputFile = new File(args[0]);
         final Scanner inputData = new Scanner(inputFile);
@@ -25,18 +22,18 @@ public class Test {
         //tree.display();
         long memory = peakMemoryUsage();
         System.out.println(NumberFormat.getNumberInstance(Locale.US).format(memory));
+        inputData.close();
     }
     private static long peakMemoryUsage() {
-
-    List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
-		long total = 0;
-		for (MemoryPoolMXBean memoryPoolMXBean : pools) {
-			if (memoryPoolMXBean.getType() == MemoryType.HEAP) {
-				long peakUsage = memoryPoolMXBean.getPeakUsage().getUsed();
-				// System.out.println("Peak used for: " + memoryPoolMXBean.getName() + " is: " + peakUsage);
-				total = total + peakUsage;
-			}
-    }
+        List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
+        long total = 0;
+        for (MemoryPoolMXBean memoryPoolMXBean : pools) {
+            if (memoryPoolMXBean.getType() == MemoryType.HEAP) {
+                long peakUsage = memoryPoolMXBean.getPeakUsage().getUsed();
+                // System.out.println("Peak used for: " + memoryPoolMXBean.getName() + " is: " + peakUsage);
+                total = total + peakUsage;
+            }
+        }
     return total;
     }
 	/*
@@ -47,6 +44,7 @@ public class Test {
 		}
 		return null;
 	}
+	*/
 	 //call this method
 	  public static ScrabbleWord findWord(char[][] board) {
 		for (int row = 0; row < board.length; row ++) {
@@ -89,5 +87,4 @@ public class Test {
 			return Character.toString(board[row][col]);
 		}
 	}
-	*/
 }
