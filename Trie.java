@@ -102,36 +102,69 @@ public class Trie {
             if (e == null) {
                 continue;
             }
-            if (isInHand(e, hand)) {
-                //System.out.println("TEST");
-                getAvailibleSuffixes(e, "", spaceLeft, hand, list, col, row, orientation);
+            if (isOnBoard(e, word)) {
+                if (orientation == 'h') {
+                    final int newRow = word.getScrabbleWord().indexOf(e.toString()) + row;
+                    getAvailibleSuffixes(e, "", spaceLeft, hand, list, col, newRow, orientation);
+                } else {
+                    final int newCol = word.getScrabbleWord().indexOf(e.toString()) + col;
+                    getAvailibleSuffixes(e, "", spaceLeft, hand, list, newCol, row, orientation);
+                }
             }
 	    }
-	    return list.removeFirst();
+	    //System.out.println(list);
+	    ScrabbleWord result = list.removeFirst();
+	    if (result == null) {
+	        return word;
+	    }
+	    return result;
 	}
-	private void getAvailibleSuffixes(final Entry e, final String s, final int spaceLeft,
+	private boolean isOnBoard(Entry e, ScrabbleWord word) {
+        
+        return word.getScrabbleWord().contains(e.toString());
+    }
+    private void getAvailibleSuffixes(final Entry e, final String s, final int spaceLeft,
 	                                  final char[] hand, final MyList<ScrabbleWord> list,
 	                                  final int startCol, final int startRow, final char orientation) {
 	    if (e.isWordEnd) {
-	        list.insert(new ScrabbleWord(s + e, startRow, startCol, orientation));
+	        final ScrabbleWord newWord = new ScrabbleWord(s + e, startRow, startCol, orientation);
+	        if (list.size() == 0) {
+	            list.addFirst(newWord);
+	        } else if (newWord.compareTo(list.first()) < 0) { 
+	            list.removeFirst();
+	            list.addFirst(newWord);
+	        }
+	        //list.insert(newWord);
 	    }
 	    if (spaceLeft > 1) {
 	        for (Entry c: e.children) {
+	            char[] newHand = new char[hand.length];
+	            for (int i = 0; i < hand.length; i++) {
+	                newHand[i] = hand[i];
+	            }
 	            if (c == null) {
 	                continue;
-	            } else if (isInHand(c, hand)) {
-	                getAvailibleSuffixes(c, s + e, spaceLeft - 1, hand, list, startCol, startRow, orientation);
+	            } else if (isInHand(c, newHand)) {
+	                getAvailibleSuffixes(c, s + e, spaceLeft - 1, newHand, list, startCol, startRow, orientation);
 	            }
 	        }
 	    }
 	}
     private boolean isInHand(Entry e, char[] hand) {
+        for (int i = 0; i < hand.length; i++) {
+            if (hand[i] == e.toString().charAt(0)) {
+                hand[i] = '!';
+                return true;
+            }
+        }
+        /*
         for (final Character c : hand) {
             //System.out.printf("%s %s", e, c);
             if (c.toString().equals(e.toString())) {
                 return true;
             }
         }
+        */
         return false;
     }
 }

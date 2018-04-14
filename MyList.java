@@ -145,7 +145,7 @@ public class MyList<E extends Comparable<E>> implements Iterable<E> {
 
   // public update methods
   /**
-   * Inserts something to preserve order, but won't insert duplicates
+   * Inserts something to preserve order
    * @param e
    */
   public E insert(final E e) {
@@ -157,8 +157,6 @@ public class MyList<E extends Comparable<E>> implements Iterable<E> {
               current = current.next;
               if (current.element.compareTo(e) > 0) {
                   return addBetween(e, current.prev, current).element;
-              } else if (current.element.compareTo(e) == 0) {
-                  return current.element;
               }
           }
       }
