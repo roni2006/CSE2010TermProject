@@ -90,7 +90,7 @@ public class ScrabbleWord implements Comparable<ScrabbleWord> {
         final int pointDifference = getPoints() - other.getPoints();
         if (pointDifference == 0) {
             //TODO determine how to order in this case
-            return 0;
+            return other.word.length() - thisba2.word.length();
         } else {
             return pointDifference;
         }
@@ -98,5 +98,8 @@ public class ScrabbleWord implements Comparable<ScrabbleWord> {
     private int getPoints() {
         // TODO Auto-generated method stub
         return 0;
+    }
+    public String toString() {
+        return String.format("%s r: %d c: %d. o:%s", word, startRow, startCol, orientation);
     }
 }

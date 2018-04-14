@@ -20,6 +20,10 @@ public class Test {
             }
         }
         //tree.display();
+        final ScrabbleWord test = new ScrabbleWord("MYWORD", 0, 0, 'h');
+        final char[] handTest = {'A','A','X','Y','T','D','N'};
+        final ScrabbleWord result = tree.getWords(test, handTest);
+        System.out.println(result);
         long memory = peakMemoryUsage();
         System.out.println(NumberFormat.getNumberInstance(Locale.US).format(memory));
         inputData.close();
