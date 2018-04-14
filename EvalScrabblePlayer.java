@@ -444,9 +444,6 @@ public class EvalScrabblePlayer {
                     //System.out.println(letterPoints);
                 }
             }
-               
-                    
-                
 
             //System.out.printf("The %d th letter of %s is %c: %d points, ", i, playerW, letterInWord, letterPoints);
             
@@ -489,6 +486,7 @@ public class EvalScrabblePlayer {
         totalScore = totalScore * bonusForWord;
         
         // return
+        //System.out.println(totalScore);
         return totalScore;
     }
 

@@ -61,10 +61,12 @@ public class ScrabblePlayer {
         for (int i = 0; i < availableLetters.length; i++) {
             availableLetters[i] = Character.toUpperCase(availableLetters[i]);
         }
+        //System.out.println(wordOnBoard);
         //System.out.println(availableLetters);
         final ScrabbleWord result = tree.getWords(wordOnBoard, availableLetters);
         //System.out.println(result);
-        return  result;
+        //System.out.println(result.getPoints(result.getScrabbleWord()));
+        return result;
     }
   //call this method
     public static ScrabbleWord findWord(char[][] board) {
