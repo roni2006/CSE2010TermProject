@@ -1,11 +1,11 @@
 /*
 
-  Authors (group members):
-  Email addresses of group members:
-  Group name:
+  Authors (group members): Sung-Jun Baek
+  Email addresses of group members: sbaek2015@my.fit.edu
+  Group name: 
 
-  Course:
-  Section:
+  Course: CSE2010
+  Section: 2
 
   Description of the overall algorithm and key data structures:
 
