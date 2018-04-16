@@ -1,7 +1,0 @@
-TO DO
-Trie.java
-	List<Entry> for each letter
-Find Possible Words
-Find Points for Word
-
-	

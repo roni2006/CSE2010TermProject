@@ -116,7 +116,7 @@ public class ScrabbleWord implements Comparable<ScrabbleWord> {
 
     @Override
     public int compareTo(ScrabbleWord other) {
-        final int pointDifference = other.getPoints(other.word) - this.getPoints(other.word);
+        final int pointDifference = other.getPoints() - this.getPoints();
         if (pointDifference == 0) {
             //TODO determine how to order in this case
             return other.word.length() - this.word.length();
@@ -125,14 +125,14 @@ public class ScrabbleWord implements Comparable<ScrabbleWord> {
         }
     }
     
-    public int getPoints(String str) {
+    public int getPoints() {
         int totalScore = 0, bonusForWord = 1;
         int startColumn = getStartColumn();
         int startRow = getStartRow();
         
-        for (int i = 0; i < str.length(); i++)
+        for (int i = 0; i < word.length(); i++)
         {
-            Character letterInWord = str.charAt(i);
+            Character letterInWord = word.charAt(i);
             
             byte element = (byte) letterInWord.hashCode();
             int index = (element + OFFSET) % (LETTERS.length - 1) + 1;
@@ -179,5 +179,17 @@ public class ScrabbleWord implements Comparable<ScrabbleWord> {
     }
     public String toString() {
         return String.format("%s r: %d c: %d. o:%s", word, startRow, startCol, orientation);
+    }
+    public boolean equals(ScrabbleWord other) {
+        if (this.word.equals(other.word)) {
+            if (this.getOrientation() == other.getOrientation()) {
+                if (this.startCol == other.startCol) {
+                    if (this.startRow == other.startRow) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

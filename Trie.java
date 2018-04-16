@@ -61,22 +61,8 @@ public class Trie {
         }
 
     }
-    public void display() {
-        display(root, "");
-    }
-	private static void display(final Entry e, final String s) {
-		if (e.isWordEnd) {
-			System.out.println(s + e);
-		}
-		for (Entry c : e.children) {
-		    if (c != null) {
-		          display(c, s + e);
-		    }
-		}
-		//System.out.println();
-	}
-	public ScrabbleWord getWords(final ScrabbleWord word, final char[] hand) {
-	    MyList<ScrabbleWord> list = new MyList<ScrabbleWord>();
+	public ScrabbleWord getBestWord(final ScrabbleWord word, final char[] hand) {
+	    ScrabbleWord result = new ScrabbleWord();
 	    final int col = word.getStartColumn();
 	    final int row = word.getStartRow();
 	    final char orientation;
@@ -98,43 +84,54 @@ public class Trie {
 	            spaceLeft = horizSpace;
 	        }
 	    }
-	    for (final Entry e : root.children) {
-            if (e == null) {
-                continue;
-            }
-            if (isOnBoard(e, word)) {
-                if (orientation == 'h') {
-                    final int newRow = word.getScrabbleWord().indexOf(e.toString()) + row;
-                    getAvailibleSuffixes(e, "", spaceLeft, hand, list, col, newRow, orientation);
-                } else {
-                    final int newCol = word.getScrabbleWord().indexOf(e.toString()) + col;
-                    getAvailibleSuffixes(e, "", spaceLeft, hand, list, newCol, row, orientation);
-                }
-            }
-	    }
-	    //System.out.println(list);
-	    ScrabbleWord result = list.removeFirst();
+	    result = wordStartsWithLetterOnBoard(word, hand, result, col, row, orientation, spaceLeft);
 	    if (result == null) {
 	        return word;
 	    }
 	    return result;
 	}
-	private boolean isOnBoard(Entry e, ScrabbleWord word) {
-        
-        return word.getScrabbleWord().contains(e.toString());
+    /**
+     * @param word
+     * @param hand
+     * @param result
+     * @param col
+     * @param row
+     * @param orientation
+     * @param spaceLeft
+     * @return
+     */
+    private ScrabbleWord wordStartsWithLetterOnBoard(final ScrabbleWord word, final char[] hand,
+                                                     ScrabbleWord result, final int col, final int row,
+                                                     final char orientation, final int spaceLeft) {
+        final String wordOnBoard = word.getScrabbleWord();
+        final Entry[] rootChildren = root.children;
+        for (int i = 0; i < wordOnBoard.length(); i++) {
+            final byte b = (byte) (Character.hashCode(wordOnBoard.charAt(i)));
+            final int index = (b + OFFSET) % ALPHABET.length;
+            final Entry e = rootChildren[index];
+            if (rootChildren[index] != null) {
+                if (orientation == 'h') {
+                    final int newRow = word.getScrabbleWord().indexOf(e.toString()) + row;
+                    result = getAvailibleSuffixes(e, "", spaceLeft, hand, result, col, newRow, orientation);
+                } else {
+                    final int newCol = word.getScrabbleWord().indexOf(e.toString()) + col;
+                    result = getAvailibleSuffixes(e, "", spaceLeft, hand, result, newCol, row, orientation);
+                }
+            }
+        }
+        return result;
     }
-    private void getAvailibleSuffixes(final Entry e, final String s, final int spaceLeft,
-	                                  final char[] hand, final MyList<ScrabbleWord> list,
+    private ScrabbleWord getAvailibleSuffixes(final Entry e, final String s, final int spaceLeft,
+	                                  final char[] hand, final ScrabbleWord word,
 	                                  final int startCol, final int startRow, final char orientation) {
-	    if (e.isWordEnd) {
+	    ScrabbleWord result = word;
+        if (e.isWordEnd) {
 	        final ScrabbleWord newWord = new ScrabbleWord(s + e, startRow, startCol, orientation);
-	        if (list.size() == 0) {
-	            list.addFirst(newWord);
-	        } else if (newWord.compareTo(list.first()) < 0) { 
-	            list.removeFirst();
-	            list.addFirst(newWord);
+	        if (result == null) {
+	            result = newWord;
+	        } else if (newWord.compareTo(result) < 0) { 
+	            result = newWord;
 	        }
-	        //list.insert(newWord);
 	    }
 	    if (spaceLeft > 1) {
 	        for (Entry c: e.children) {
@@ -145,10 +142,11 @@ public class Trie {
 	            if (c == null) {
 	                continue;
 	            } else if (isInHand(c, newHand)) {
-	                getAvailibleSuffixes(c, s + e, spaceLeft - 1, newHand, list, startCol, startRow, orientation);
+	                result = getAvailibleSuffixes(c, s + e, spaceLeft - 1, newHand, result, startCol, startRow, orientation);
 	            }
 	        }
 	    }
+	    return result;
 	}
     private boolean isInHand(Entry e, char[] hand) {
         for (int i = 0; i < hand.length; i++) {
