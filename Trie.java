@@ -66,7 +66,6 @@ public class Trie {
 	    final int col = word.getStartColumn();
 	    final int row = word.getStartRow();
 	    final boolean originalIsHorizontal = word.getOrientation() == 'h'; //is the original word horizontal?
-
 	    if (originalIsHorizontal) {
 	        //Case 1: Best result is perpendicular, starting with a letter already on the board
 	        int spaceLeft = BOARD_SIZE - (row + 1); //Space left under the word
@@ -74,9 +73,8 @@ public class Trie {
 	        //Case 2: Best result is an extension of the word on board (suffix)
 	        if (word.getScrabbleWord().length() > 1) { //following only works if word is at least two char long
 	            spaceLeft = BOARD_SIZE - (col + word.getScrabbleWord().length()); //space right of word
-	            result = wordExtendsWordOnBoard(word, hand, result, col, row, 'h', spaceLeft);
+	            result = resultExtendsWordOnBoard(word, hand, result, col, row, 'h', spaceLeft);
 	        }
-	        
 	    } else {
 	        //Case 1
 	        int spaceLeft = BOARD_SIZE - (col + 1);//Space right of word
@@ -84,15 +82,16 @@ public class Trie {
 	        //Case 2
 	        if (word.getScrabbleWord().length() > 1) {
 	            spaceLeft = BOARD_SIZE - (row + word.getScrabbleWord().length()); //space under of word
-	            result = wordExtendsWordOnBoard(word, hand, result, col, row, 'v', spaceLeft);
+	            result = resultExtendsWordOnBoard(word, hand, result, col, row, 'v', spaceLeft);
 	        }
 	    }
 	    if (result == null) {
 	        return word;
 	    }
+	    //System.out.println(result);
 	    return result;
 	}
-    private ScrabbleWord wordExtendsWordOnBoard(ScrabbleWord word, char[] hand, ScrabbleWord result, int col, int row,
+    private ScrabbleWord resultExtendsWordOnBoard(ScrabbleWord word, char[] hand, ScrabbleWord result, int col, int row,
             char orientation, int spaceLeft) {
         Entry letterOnBoard = getEntryWithPrefix(word.getScrabbleWord(), root);
         final String prefix = word.getScrabbleWord().substring(0, word.getScrabbleWord().length() - 1);//Everything except the last letter
@@ -134,8 +133,8 @@ public class Trie {
         for (int i = 0; i < wordOnBoard.length(); i++) {
             final char c = wordOnBoard.charAt(i);
             final int index = getIndex(c);
-            final Entry firstLetter = rootChildren[index];
-            if (rootChildren[index] != null) {
+            final Entry firstLetter = root.children[index];
+            if (root.children[index] != null) {
                 if (orientation == 'h') {
                     final int newRow = word.getScrabbleWord().indexOf(firstLetter.toString()) + row;
                     result = getAvailibleSuffixes(firstLetter, "", spaceLeft, hand, result, col, newRow, orientation);
@@ -156,6 +155,18 @@ public class Trie {
         final int index = (b + OFFSET) % ALPHABET.length;
         return index;
     }
+    /**
+     * 
+     * @param currentEntry
+     * @param currentString
+     * @param spaceLeft
+     * @param hand
+     * @param currentResult
+     * @param startCol
+     * @param startRow
+     * @param orientation
+     * @return
+     */
     private ScrabbleWord getAvailibleSuffixes(final Entry currentEntry, final String currentString, final int spaceLeft,
 	                                  final char[] hand, final ScrabbleWord currentResult,
 	                                  final int startCol, final int startRow, final char orientation) {

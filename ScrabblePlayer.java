@@ -59,7 +59,6 @@ public class ScrabblePlayer {
         if (wordOnBoard == null) {
             System.out.println("ERROR");
         }
-        
         //System.out.println(availableLetters);
         final ScrabbleWord result = tree.getBestWord(wordOnBoard, availableLetters);
         //System.out.println(result);

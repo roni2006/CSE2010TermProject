@@ -118,7 +118,6 @@ public class ScrabbleWord implements Comparable<ScrabbleWord> {
     public int compareTo(ScrabbleWord other) {
         final int pointDifference = other.getPoints() - this.getPoints();
         if (pointDifference == 0) {
-            //TODO determine how to order in this case
             return other.word.length() - this.word.length();
         } else {
             return pointDifference;
