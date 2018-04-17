@@ -65,31 +65,57 @@ public class Trie {
 	    ScrabbleWord result = new ScrabbleWord();
 	    final int col = word.getStartColumn();
 	    final int row = word.getStartRow();
-	    final char orientation;
-	    final int spaceLeft;
-	    final int vertSpace = BOARD_SIZE - (row + 1);
-	    final int horizSpace = BOARD_SIZE - (col + 1);
-	    if (word.getOrientation() == 'v') {
-	        orientation = 'h';
-	        spaceLeft = horizSpace;
-	    } else if (word.getOrientation() == 'h') {
-	        orientation = 'v';
-            spaceLeft = vertSpace;
+	    final boolean originalIsHorizontal = word.getOrientation() == 'h'; //is the original word horizontal?
+
+	    if (originalIsHorizontal) {
+	        //Case 1: Best result is perpendicular, starting with a letter already on the board
+	        int spaceLeft = BOARD_SIZE - (row + 1); //Space left under the word
+	        result = wordStartsWithLetterOnBoard(word, hand, result, col, row, 'v', spaceLeft);
+	        //Case 2: Best result is an extension of the word on board (suffix)
+	        if (word.getScrabbleWord().length() > 1) { //following only works if word is at least two char long
+	            spaceLeft = BOARD_SIZE - (col + word.getScrabbleWord().length()); //space right of word
+	            result = wordExtendsWordOnBoard(word, hand, result, col, row, 'h', spaceLeft);
+	        }
+	        
 	    } else {
-	        if (vertSpace > horizSpace) {
-	            spaceLeft = vertSpace;
-	            orientation = 'v';
-	        } else {
-	            orientation = 'h';
-	            spaceLeft = horizSpace;
+	        //Case 1
+	        int spaceLeft = BOARD_SIZE - (col + 1);//Space right of word
+	        result = wordStartsWithLetterOnBoard(word, hand, result, col, row, 'h', spaceLeft);
+	        //Case 2
+	        if (word.getScrabbleWord().length() > 1) {
+	            spaceLeft = BOARD_SIZE - (row + word.getScrabbleWord().length()); //space under of word
+	            result = wordExtendsWordOnBoard(word, hand, result, col, row, 'v', spaceLeft);
 	        }
 	    }
-	    result = wordStartsWithLetterOnBoard(word, hand, result, col, row, orientation, spaceLeft);
 	    if (result == null) {
 	        return word;
 	    }
 	    return result;
 	}
+    private ScrabbleWord wordExtendsWordOnBoard(ScrabbleWord word, char[] hand, ScrabbleWord result, int col, int row,
+            char orientation, int spaceLeft) {
+        Entry letterOnBoard = getEntryWithPrefix(word.getScrabbleWord(), root);
+        final String prefix = word.getScrabbleWord().substring(0, word.getScrabbleWord().length() - 1);//Everything except the last letter
+        ScrabbleWord possibleResult = getAvailibleSuffixes(letterOnBoard, prefix, spaceLeft, hand, result, col, row, orientation);
+        if (possibleResult == null || possibleResult.equals(word)) {
+            return result;
+        } else {
+            return possibleResult;
+        }
+    }
+    private Entry getEntryWithPrefix(final String prefix, final Entry current) {
+        if (prefix.length() == 0) {
+            return current;
+        } else {
+            final char c = prefix.charAt(0);
+            final int index = getIndex(c);
+            final Entry newEntry = current.children[index];
+            if (newEntry != null) {
+                return getEntryWithPrefix(prefix.substring(1), newEntry);
+            }
+        }
+        return null;
+    }
     /**
      * @param word
      * @param hand
@@ -106,27 +132,36 @@ public class Trie {
         final String wordOnBoard = word.getScrabbleWord();
         final Entry[] rootChildren = root.children;
         for (int i = 0; i < wordOnBoard.length(); i++) {
-            final byte b = (byte) (Character.hashCode(wordOnBoard.charAt(i)));
-            final int index = (b + OFFSET) % ALPHABET.length;
-            final Entry e = rootChildren[index];
+            final char c = wordOnBoard.charAt(i);
+            final int index = getIndex(c);
+            final Entry firstLetter = rootChildren[index];
             if (rootChildren[index] != null) {
                 if (orientation == 'h') {
-                    final int newRow = word.getScrabbleWord().indexOf(e.toString()) + row;
-                    result = getAvailibleSuffixes(e, "", spaceLeft, hand, result, col, newRow, orientation);
+                    final int newRow = word.getScrabbleWord().indexOf(firstLetter.toString()) + row;
+                    result = getAvailibleSuffixes(firstLetter, "", spaceLeft, hand, result, col, newRow, orientation);
                 } else {
-                    final int newCol = word.getScrabbleWord().indexOf(e.toString()) + col;
-                    result = getAvailibleSuffixes(e, "", spaceLeft, hand, result, newCol, row, orientation);
+                    final int newCol = word.getScrabbleWord().indexOf(firstLetter.toString()) + col;
+                    result = getAvailibleSuffixes(firstLetter, "", spaceLeft, hand, result, newCol, row, orientation);
                 }
             }
         }
         return result;
     }
-    private ScrabbleWord getAvailibleSuffixes(final Entry e, final String s, final int spaceLeft,
-	                                  final char[] hand, final ScrabbleWord word,
+    /**
+     * @param c
+     * @return
+     */
+    private int getIndex(final char c) {
+        final byte b = (byte) (Character.hashCode(c));
+        final int index = (b + OFFSET) % ALPHABET.length;
+        return index;
+    }
+    private ScrabbleWord getAvailibleSuffixes(final Entry currentEntry, final String currentString, final int spaceLeft,
+	                                  final char[] hand, final ScrabbleWord currentResult,
 	                                  final int startCol, final int startRow, final char orientation) {
-	    ScrabbleWord result = word;
-        if (e.isWordEnd) {
-	        final ScrabbleWord newWord = new ScrabbleWord(s + e, startRow, startCol, orientation);
+	    ScrabbleWord result = currentResult;
+        if (currentEntry.isWordEnd) {
+	        final ScrabbleWord newWord = new ScrabbleWord(currentString + currentEntry, startRow, startCol, orientation);
 	        if (result == null) {
 	            result = newWord;
 	        } else if (newWord.compareTo(result) < 0) { 
@@ -134,35 +169,23 @@ public class Trie {
 	        }
 	    }
 	    if (spaceLeft > 1) {
-	        for (Entry c: e.children) {
-	            char[] newHand = new char[hand.length];
-	            for (int i = 0; i < hand.length; i++) {
-	                newHand[i] = hand[i];
-	            }
-	            if (c == null) {
-	                continue;
-	            } else if (isInHand(c, newHand)) {
-	                result = getAvailibleSuffixes(c, s + e, spaceLeft - 1, newHand, result, startCol, startRow, orientation);
+	        for (int i = 0; i < hand.length; i++) {
+	            final char c = hand[i];
+	            if (c != '!' && c != '_') {
+	                char[] newHand = new char[hand.length];
+	                for (int j = 0; j < hand.length; j++) {
+	                    newHand[j] = hand[j];
+	                    if (j == i) {
+	                        newHand[j] = '!';
+	                    }
+	                }
+	                final Entry newEntry = currentEntry.children[getIndex(c)];
+	                if (newEntry != null) {
+	                    result = getAvailibleSuffixes(newEntry, currentString + currentEntry, spaceLeft - 1, newHand, result, startCol, startRow, orientation);    
+	                }
 	            }
 	        }
 	    }
 	    return result;
 	}
-    private boolean isInHand(Entry e, char[] hand) {
-        for (int i = 0; i < hand.length; i++) {
-            if (hand[i] == e.toString().charAt(0)) {
-                hand[i] = '!';
-                return true;
-            }
-        }
-        /*
-        for (final Character c : hand) {
-            //System.out.printf("%s %s", e, c);
-            if (c.toString().equals(e.toString())) {
-                return true;
-            }
-        }
-        */
-        return false;
-    }
 }

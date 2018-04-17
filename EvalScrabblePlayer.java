@@ -141,6 +141,7 @@ public class EvalScrabblePlayer {
      */
     private static ScrabblePlayer createScrabblePlayer(String dictFile) 
     {
+        System.out.println("Used memory before pre-processing in bytes: " + peakMemoryUsage());
         //Preprocessing in ScrabblePlayer
         System.out.println("Preprocessing in ScrabblePlayer...");
 
@@ -179,7 +180,7 @@ public class EvalScrabblePlayer {
     char[][]  board = new char[15][15];
     char[]    availableLetters = new char[7]; 
     Random    rand = new Random(seed);
-    
+    double zeroCount = 0;
     for (int game = 0; game < numOfGames; game++)
         {
         //to do: initialize the board with spaces
@@ -197,9 +198,10 @@ public class EvalScrabblePlayer {
 
         //Calculate the time taken to find the words on the board
         long startTime = bean.getCurrentThreadCpuTime();
+
         //Play the game of Scrabble and find the words
         ScrabbleWord playerWord = player.getScrabbleWord(boardClone, availableLettersClone);
-        
+
         long endTime = bean.getCurrentThreadCpuTime();
 
         //System.out.println(endTime - startTime);
@@ -209,12 +211,16 @@ public class EvalScrabblePlayer {
             System.exit(-1);
             }
         totalElapsedTime += (endTime - startTime);
-
+        if ((endTime - startTime) == 0) {
+            zeroCount++;
+        }
         //Calculate points for the words found
-        totalPoints += calculatePoints(playerWord, initialWord, board, availableLetters, dictionary);
+        if (!playerWord.equals(initialWord)) {
+            totalPoints += calculatePoints(playerWord, initialWord, board, availableLetters, dictionary);
+        }
         //System.out.println("Total: " + totalPoints);
         }
-
+        System.out.println(zeroCount / numOfGames);
         reportPerformance(totalPoints, totalElapsedTime, peakMemoryUsage(), 
                           numOfGames);
     }
@@ -760,7 +766,9 @@ public class EvalScrabblePlayer {
         ScrabbleWord newWord;
         String playW = playWord.getScrabbleWord();
         String initialW = initialWord.getScrabbleWord();
-        
+        if (playW.equals(initialW)) {
+            return null;
+        }
         // start row and column for the playWord
         int pStartRow = playWord.getStartRow(), pStartCol = playWord.getStartColumn();
         

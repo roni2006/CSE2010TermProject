@@ -55,14 +55,14 @@ public class ScrabblePlayer {
 
     public ScrabbleWord getScrabbleWord(char[][] board, char[] availableLetters) {
         final ScrabbleWord wordOnBoard = findWord(board);
-        
+        //System.out.println(wordOnBoard);
         if (wordOnBoard == null) {
             System.out.println("ERROR");
         }
-        for (int i = 0; i < availableLetters.length; i++) {
-            availableLetters[i] = Character.toUpperCase(availableLetters[i]);
-        }
+        
+        //System.out.println(availableLetters);
         final ScrabbleWord result = tree.getBestWord(wordOnBoard, availableLetters);
+        //System.out.println(result);
         return result;
     }
   //call this method

@@ -178,7 +178,7 @@ public class ScrabbleWord implements Comparable<ScrabbleWord> {
         return totalScore;
     }
     public String toString() {
-        return String.format("%s r: %d c: %d. o:%s", word, startRow, startCol, orientation);
+        return String.format("%s r: %d c: %d. o:%s p: %d", word, startRow, startCol, orientation, getPoints());
     }
     public boolean equals(ScrabbleWord other) {
         if (this.word.equals(other.word)) {
