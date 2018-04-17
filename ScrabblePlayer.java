@@ -1,21 +1,19 @@
 /*
+  Authors (group members):Javier Munoz, Sung-Jun Baek, Thanart Pandey
+  Email addresses of group members: jmunoz2014@my.fit.edu, sbaek2015@my.fit.edu, tpandey2017@my.fit.edu
+  Group name: 14
 
-  Authors (group members):
-  Email addresses of group members:
-  Group name:
-
-  Course:
-  Section:
+  Course: CSE2010
+  Section: 2
 
   Description of the overall algorithm and key data structures:
-
-
+   To find a next best word selection from the dictionary for the Scrabble.
+   The program mostly uses hash, binary representation (byte), and trie algorithm
 */
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
-
 
 public class ScrabblePlayer {
     Trie tree = new Trie();
@@ -56,44 +54,48 @@ public class ScrabblePlayer {
     public ScrabbleWord getScrabbleWord(char[][] board, char[] availableLetters) {
         final ScrabbleWord wordOnBoard = findWord(board);
         
-        if (wordOnBoard == null) {
+        if (wordOnBoard == null) { //if there is no word on the board
             System.out.println("ERROR");
         }
+        //convert available letters to the uppercase
         for (int i = 0; i < availableLetters.length; i++) {
             availableLetters[i] = Character.toUpperCase(availableLetters[i]);
         }
+        //get the best word from trie tree
         final ScrabbleWord result = tree.getBestWord(wordOnBoard, availableLetters);
         return result;
     }
-  //call this method
+    
+    //call this method to find a existing word on the board
     public static ScrabbleWord findWord(char[][] board) {
       for (int row = 0; row < board.length; row ++) {
           for (int col = 0; col < board.length; col++) {
               if (board[row][col] != ' ') {
                   char orientation;
                   if (col == board.length - 1) {
-                      orientation = 'v';
+                      orientation = 'v'; //set as a verticle
                   } else if (row == board.length - 1) {
-                      orientation = 'h';
+                      orientation = 'h'; //set as a horizontal
                   }else if (board[row][col + 1] != ' ') {
-                      orientation = 'h';
+                      orientation = 'h'; //set as a horizontal
                   } else if (board[row + 1][col] != ' ') {
-                      orientation = 'v';
+                      orientation = 'v'; //set as a verticle
                   } else {
-                      orientation = 'o';
-
+                      orientation = 'o'; //if there is no specific orientation
                   }
+                  //get word based on the given orientation and row and column
                   String word = getWord(orientation, board, row, col);
+                  //return the collected infomation
                   return new ScrabbleWord(word, row, col, orientation);
               }
           }
       }
-      return null;
+      return null; //return this if there is no word
     }
 
     //this method only supports findWord
     public static String getWord(char orientation, char[][] board, int row, int col) {
-        if (orientation == 'h') {
+        if (orientation == 'h') { //if the word starts in horizontal direction
             int wordSize = board.length - col;
             String word = "";
             for (int c = 0; c < wordSize; c++) {
@@ -103,7 +105,7 @@ public class ScrabblePlayer {
                 word = word.concat(Character.toString(board[row][col + c]));
             }
             return word;
-        } else if (orientation == 'v'){
+        } else if (orientation == 'v'){ //if the word starts in vertical direction
             int wordSize = board.length - row;
             String word = "";
             for (int r = 0; r < wordSize; r++) {
