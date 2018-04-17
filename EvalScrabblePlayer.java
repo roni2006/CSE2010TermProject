@@ -181,36 +181,42 @@ public class EvalScrabblePlayer {
     char[]    availableLetters = new char[7]; 
     Random    rand = new Random(seed);
     double zeroCount = 0;
+    Runtime runtime = Runtime.getRuntime();
+    long memory = 0;
+    long usedMemoryBefore = runtime.totalMemory() - runtime.freeMemory();
     for (int game = 0; game < numOfGames; game++)
-        {
+    {
         //to do: initialize the board with spaces
         //       add a random word of at most length 7 from the dictionary
         ScrabbleWord initialWord = generateBoard(board, dictionary, rand);
-        
+
         //to do: Randomly pick 7 letters according to the distribution of letters in
         //       the wiki page in the assignment
         generateAvailableLetters(availableLetters, rand);
         //System.out.printf("available Letters: %s%n", new String(availableLetters));
-                
+
         // the player might change board and/or availableLetters, give the player a clone
         char[][] boardClone = board.clone();
         char[]   availableLettersClone = availableLetters.clone();
 
         //Calculate the time taken to find the words on the board
-        long startTime = bean.getCurrentThreadCpuTime();
+        //long startTime = bean.getCurrentThreadCpuTime();
+        
+        long startTime = System.nanoTime();
 
         //Play the game of Scrabble and find the words
         ScrabbleWord playerWord = player.getScrabbleWord(boardClone, availableLettersClone);
 
-        long endTime = bean.getCurrentThreadCpuTime();
-
+        //long endTime = bean.getCurrentThreadCpuTime();
+        long endTime = System.nanoTime();
         //System.out.println(endTime - startTime);
         if ((endTime - startTime)/1.0E9 > 100)  // longer than 1 second
-            {
+        {
             System.err.println("player.getScrabbleWord() exceeded 1 second");
             System.exit(-1);
-            }
+        }
         totalElapsedTime += (endTime - startTime);
+
         if ((endTime - startTime) == 0) {
             zeroCount++;
         }
@@ -219,10 +225,13 @@ public class EvalScrabblePlayer {
             totalPoints += calculatePoints(playerWord, initialWord, board, availableLetters, dictionary);
         }
         //System.out.println("Total: " + totalPoints);
-        }
-        System.out.println(zeroCount / numOfGames);
-        reportPerformance(totalPoints, totalElapsedTime, peakMemoryUsage(), 
-                          numOfGames);
+    }
+    long usedMemoryAfter = runtime.totalMemory() - runtime.freeMemory();
+    //System.out.println(zeroCount / numOfGames);
+    memory += (usedMemoryAfter - usedMemoryBefore);
+    System.out.println("Memory: " + memory / numOfGames);
+    reportPerformance(totalPoints, totalElapsedTime, peakMemoryUsage(), 
+            numOfGames);
     }
 
 
@@ -370,7 +379,7 @@ public class EvalScrabblePlayer {
         if (memory <= 0)
             memory = 1;
         
-        double avgPoints = totalPoints / numOfGames;
+        double avgPoints = totalPoints * 1.0 / (numOfGames * 1.0);
         System.out.printf("Average Points: %.4f\n", avgPoints);
 
         System.out.println("totalElapsedTime " + totalElapsedTime);

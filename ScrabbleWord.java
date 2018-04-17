@@ -13,7 +13,16 @@
   */
 
 public class ScrabbleWord implements Comparable<ScrabbleWord> {
-    private static final byte OFFSET = 13;    //(Char.hash + OFFSET) % ALPHABET.length = alphabet.indexOf(Char)
+    /*
+     * Description of modifications:
+     * Added OFFSET for use in constant-time access of Letters array
+     * Made scrabble word comparable by implementing
+     *  getPoints()
+     * Added toString for debugging
+     * Added equals() to check that we can't return the word already on the board
+     */
+    //Used in determining index of the letters A-Z
+    private static final byte OFFSET = 13;    //Use: (Char.hash + OFFSET) % (LETTERS.length - 1) + 1 = LETTERS.indexOf(Char)
     
     private static final char[] LETTERS =
     {'_', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
@@ -21,7 +30,7 @@ public class ScrabbleWord implements Comparable<ScrabbleWord> {
     
     private static final int[] LETTERS_SCORE =
     {0, 1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3,
-     1, 1, 3, 10,1, 1, 1, 1, 4, 4, 8, 4, 10 };
+     1, 1, 3, 10,1, 1, 1, 1, 4, 4, 8, 4, 10};
     
     private static final String[] BONUS_POS =
     {"30","110","62","82","03","73","143","26","66","86","126","37","117", // double letter score
@@ -115,41 +124,45 @@ public class ScrabbleWord implements Comparable<ScrabbleWord> {
     }
 
     @Override
-    public int compareTo(ScrabbleWord other) {
-        final int pointDifference = other.getPoints() - this.getPoints();
-        if (pointDifference == 0) {
-            return other.word.length() - this.word.length();
-        } else {
-            return pointDifference;
-        }
+    /**
+     * Used to compare ScrabbleWords to determine the best word
+     * Words worth more points are better
+     */
+    public int compareTo(final ScrabbleWord other) {
+        return other.getPoints() - this.getPoints();
     }
-    
+    /**
+     * Determines the number of points a word is worth.
+     * Much of the code is taken from EvalScrabblePlayer
+     * @return
+     */
     public int getPoints() {
         int totalScore = 0, bonusForWord = 1;
-        int startColumn = getStartColumn();
-        int startRow = getStartRow();
+        final int startColumn = getStartColumn();
+        final int startRow = getStartRow();
         
-        for (int i = 0; i < word.length(); i++)
-        {
-            Character letterInWord = word.charAt(i);
-            
-            byte element = (byte) letterInWord.hashCode();
-            int index = (element + OFFSET) % (LETTERS.length - 1) + 1;
+        for (int i = 0; i < word.length(); i++) {
+            final byte element = (byte) Character.hashCode(word.charAt(i));
+            final int index = (element + OFFSET) % (LETTERS.length - 1) + 1;
             String bonusFromBoard = "";
             
             // find the score for this letter
-            int letterPoints = 0;
-            letterPoints = LETTERS_SCORE[index];
-            String position = startColumn + "" + startRow;
-            //System.out.println(position);
+            int letterPoints = LETTERS_SCORE[index];
+            final String position;
+            if (orientation == 'h') {
+                final int col = startColumn + i;
+                position = col + "" + startRow;
+            } else {
+                final int row = startRow + i;
+                position = startColumn + "" + row;
+            }
             // find the bonus score on board if exist
             for (int j = 0; j < BONUS_POS.length; j++) {
                 if (position.equals(BONUS_POS[j])) {
                     bonusFromBoard = BONUS[j];
-                    //System.out.println(bonusFromBoard);
+                    break;
                 }
             }
-            
             // double/triple letter score
             if (bonusFromBoard.equals("2L")) {
                 letterPoints = letterPoints * 2;
@@ -163,22 +176,24 @@ public class ScrabbleWord implements Comparable<ScrabbleWord> {
             } else {
                 bonusForWord = bonusForWord * 1;
             }
-            if (getOrientation() == 'h')
-                startColumn++;
-            else
-                startRow++;
-            
             // sum them up
             totalScore += letterPoints;
         }
         // final score must multiply the bonus
         totalScore = totalScore * bonusForWord;
-        //System.out.println(totalScore);
         return totalScore;
     }
+    /**
+     * For debugging
+     */
     public String toString() {
         return String.format("%s r: %d c: %d. o:%s p: %d", word, startRow, startCol, orientation, getPoints());
     }
+    /**
+     * Used in a modified EvalScrabblePlayer to make sure we can't just return the word already on the board
+     * @param other
+     * @return
+     */
     public boolean equals(ScrabbleWord other) {
         if (this.word.equals(other.word)) {
             if (this.getOrientation() == other.getOrientation()) {

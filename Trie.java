@@ -1,58 +1,122 @@
+/*
+  Authors (group members):Javier Munoz, Sung-Jun Baek, Thanart Pandey
+  Email addresses of group members: jmunoz2014@my.fit.edu, sbaek2015@my.fit.edu, tpandey2017@my.fit.edu
+  Group name: 14
 
+  Course: CSE2010
+  Section: 2
+
+  Description of the overall algorithm and key data structures:
+      The dictionary is stored as a trie.
+          Each entry in the trie has a byte element, representing its index in the alphabet
+          Each entry has a size 26 array of children
+      To find the best Scrabble Word
+          Find the word on the board, return as original word
+          Find words the start with one of the letters from original word
+          Find words that are the original word + a suffix
+          Return the word that is worth the most points
+      Finding words (availableCharacters, currentEntry, currentResult)
+          if current entry is the end of a word
+              check to see if its more points than the currentResult
+              if it is, currentResult = entry -> scrabble word
+          For each available character c, convert c to it's index in the alphabet array
+              This uses hashing to make this constant time
+              find the entry next at the same index in currentEntry.children
+              Remove c from availableCharacters
+              if next entry is the end of a word
+                  check to see if its more points than the currentResult
+                  if it is, currentResult = entry -> scrabble word
+              recurse using nextEntry, the new availableCharacters, and the current best result
+          return the best result
+              
+   To find a next best word selection from the dictionary for the Scrabble.
+   The program mostly uses hash, binary representation (byte), and trie algorithm
+*/
 public class Trie {
+    /*
+     * Description: This stores the dictionary in a trie.
+     * Constants:
+     *  The following two are used along with Character.hashCode(c) to provide constant time searching
+     *  OFFSET
+     *  ALPHABET
+     *
+     *  BOARD_SIZE
+     *
+     * Methods:
+     *      insert(Str) calls insert(Str, 0, root)
+     *      insert: uses string and int to determine character to be inserted at Entry's children
+     *      getIndex: takes a character and turns it into an index
+     *      getBestWord: given a ScrabbleWord and the char in hand, it finds a word to play by calling the other methods
+     *          getAvailableSuffixes: given an entry, it finds its descendant with the most points
+     *          wordStartsWithLetterOnBoard: finds words perpendicular to the word on board. Assuming they start with a letter on board
+     *          resultExtendsWordOnBoard: finds words extending the word on board (extending by adding suffixes, not prefixes)
+     *          getEntryWithPrefix: returns the entry with the given prefix
+     */
     private static final byte OFFSET = 13; //(Char.hash + OFFSET) % ALPHABET.length = alphabet.indexOf(Char)
     private static final char[] ALPHABET = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
                                             'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
                                             'U', 'V', 'W', 'X', 'Y', 'Z'};
     private static final int BOARD_SIZE = 15;
-    private static class Entry implements Comparable<Entry> {
-        byte element;
+    private static class Entry {
+        /*
+         * Description:
+         * Entry class, is the 'node' of the Trie
+         * 
+         * Variables:
+         *  index: index of the character in the Alphabet
+         *  children: array of children, where each child is at the same index they'd be in the alphabet
+         *  isWordEnd: is this character the end of a word
+         *
+         * Methods:
+         *  toString: uses the index to retrieve the character from the alphabet
+         */
+        private final byte index; //we use byte instead of char because byte is 8 bit and char is 16 bit
         boolean isWordEnd = false;
-		final byte prefixLength;
-		Entry parent;
-		Entry[] children = new Entry[ALPHABET.length];
-        Entry(final Character theElement, final Entry theParent) {
-            element = (byte) (theElement.hashCode());
-			parent = theParent;
-			if (parent == null) {
-				prefixLength = -1;
-			} else {
-				prefixLength = (byte) (parent.prefixLength + 1);
-			}
-        }
+		private final Entry[] children = new Entry[ALPHABET.length];
 		Entry(final char theElement) {
-			this(theElement, null);
-		}
-		public int getIndex() {
-		    return (element + OFFSET) % ALPHABET.length;
-		}
-        @Override
-        public int compareTo(Entry other) {
-            return element - other.element;
-        }
+		    if (theElement == '!') { //Is root
+		        index = -1;
+		    } else {
+		          //The following gives index the index of theElement in alphabet, assuming it is A-Z
+	            index = (byte) ((Character.hashCode(theElement) + OFFSET) % ALPHABET.length);
+		    }
+		} 
         public String toString() {
-            if (parent == null) {
+            if (index == -1) { //Is root
                 return "";
             } else {
-                return String.valueOf(ALPHABET[getIndex()]);
+                return String.valueOf(ALPHABET[index]);
             }
         }
     }
     private final Entry root;
     Trie() {
-        root = new Entry(' ');
+        root = new Entry('!'); //Root gets a special non-alphabet character
     }
     public final void insert(final String word) {
         insert(word, 0, root);
     }
+    /**
+     * Use index and word to find char element = word.charAt(index)
+     * Insert the node into current's children
+     * If there's already a node there, keep it
+     * If index is less than the last index of word
+     *  Insert with an incremented index and the new node
+     * Else
+     *  the node is the end of a word
+     * @param word
+     * @param index
+     * @param current
+     */
     private void insert(final String word, final int index, final Entry current) {
         final Entry[] kids = current.children;
         final char element = word.charAt(index);
-        Entry next = new Entry(element, current);
-        if (kids[next.getIndex()] == null) {
-            kids[next.getIndex()] = next;
+        final Entry next;
+        if (kids[getIndex(element)] == null) {
+            next = new Entry(element);
+            kids[getIndex(element)] = next;
         } else {
-            next = kids[next.getIndex()];
+            next = kids[getIndex(element)];
         }
         if (index < word.length() - 1) {
             insert(word, index + 1, next);
@@ -61,6 +125,15 @@ public class Trie {
         }
 
     }
+    /**
+     * Returns the best word to play using two cases:
+     *  First: the newWord is perpendicular to the original word and starts with a letter from originalWord
+     *  Second: the newWord is the originalWord + a suffix
+     * returns the best word from those two cases
+     * @param word
+     * @param hand
+     * @return
+     */
 	public ScrabbleWord getBestWord(final ScrabbleWord word, final char[] hand) {
 	    ScrabbleWord result = new ScrabbleWord();
 	    final int col = word.getStartColumn();
@@ -68,40 +141,59 @@ public class Trie {
 	    final boolean originalIsHorizontal = word.getOrientation() == 'h'; //is the original word horizontal?
 	    if (originalIsHorizontal) {
 	        //Case 1: Best result is perpendicular, starting with a letter already on the board
-	        int spaceLeft = BOARD_SIZE - (row + 1); //Space left under the word
-	        result = wordStartsWithLetterOnBoard(word, hand, result, col, row, 'v', spaceLeft);
+	        final int spaceUnder = BOARD_SIZE - (row + 1); //Space left under the word
+	        result = wordStartsWithLetterOnBoard(word, hand, result, col, row, 'v', spaceUnder);
 	        //Case 2: Best result is an extension of the word on board (suffix)
 	        if (word.getScrabbleWord().length() > 1) { //following only works if word is at least two char long
-	            spaceLeft = BOARD_SIZE - (col + word.getScrabbleWord().length()); //space right of word
-	            result = resultExtendsWordOnBoard(word, hand, result, col, row, 'h', spaceLeft);
+	            final int spaceRight = BOARD_SIZE - (col + word.getScrabbleWord().length()); //space right of word
+	            result = resultExtendsWordOnBoard(word, hand, result, col, row, 'h', spaceRight);
 	        }
 	    } else {
 	        //Case 1
-	        int spaceLeft = BOARD_SIZE - (col + 1);//Space right of word
-	        result = wordStartsWithLetterOnBoard(word, hand, result, col, row, 'h', spaceLeft);
+	        final int spaceRight = BOARD_SIZE - (col + 1);//Space right of word
+	        result = wordStartsWithLetterOnBoard(word, hand, result, col, row, 'h', spaceRight);
 	        //Case 2
 	        if (word.getScrabbleWord().length() > 1) {
-	            spaceLeft = BOARD_SIZE - (row + word.getScrabbleWord().length()); //space under of word
-	            result = resultExtendsWordOnBoard(word, hand, result, col, row, 'v', spaceLeft);
+	            final int spaceUnder = BOARD_SIZE - (row + word.getScrabbleWord().length()); //space under of word
+	            result = resultExtendsWordOnBoard(word, hand, result, col, row, 'v', spaceUnder);
 	        }
 	    }
 	    if (result == null) {
 	        return word;
 	    }
-	    //System.out.println(result);
 	    return result;
 	}
+	/**
+	 * Gets the best result extending the word on board
+	 * @param word
+	 * @param hand
+	 * @param result
+	 * @param col
+	 * @param row
+	 * @param orientation
+	 * @param spaceLeft
+	 * @return
+	 */
     private ScrabbleWord resultExtendsWordOnBoard(ScrabbleWord word, char[] hand, ScrabbleWord result, int col, int row,
             char orientation, int spaceLeft) {
-        Entry letterOnBoard = getEntryWithPrefix(word.getScrabbleWord(), root);
+        Entry letterOnBoard = getEntryWithPrefix(word.getScrabbleWord(), root); //Entry at end of word on board
         final String prefix = word.getScrabbleWord().substring(0, word.getScrabbleWord().length() - 1);//Everything except the last letter
-        ScrabbleWord possibleResult = getAvailibleSuffixes(letterOnBoard, prefix, spaceLeft, hand, result, col, row, orientation);
-        if (possibleResult == null || possibleResult.equals(word)) {
-            return result;
-        } else {
-            return possibleResult;
+        if (letterOnBoard != null) {
+            ScrabbleWord possibleResult = getAvailableSuffixes(letterOnBoard, prefix, spaceLeft, hand, result, col, row, orientation);
+            if (possibleResult == null || possibleResult.equals(word)) {
+                return result;
+            } else {
+                return possibleResult;
+            }
         }
+        return result;
     }
+    /**
+     * Returns the entry with the corresponding prefix
+     * @param prefix
+     * @param current
+     * @return
+     */
     private Entry getEntryWithPrefix(final String prefix, final Entry current) {
         if (prefix.length() == 0) {
             return current;
@@ -116,6 +208,7 @@ public class Trie {
         return null;
     }
     /**
+     * Finds the best word that starts with a letter already on board
      * @param word
      * @param hand
      * @param result
@@ -129,7 +222,6 @@ public class Trie {
                                                      ScrabbleWord result, final int col, final int row,
                                                      final char orientation, final int spaceLeft) {
         final String wordOnBoard = word.getScrabbleWord();
-        final Entry[] rootChildren = root.children;
         for (int i = 0; i < wordOnBoard.length(); i++) {
             final char c = wordOnBoard.charAt(i);
             final int index = getIndex(c);
@@ -137,16 +229,17 @@ public class Trie {
             if (root.children[index] != null) {
                 if (orientation == 'h') {
                     final int newRow = word.getScrabbleWord().indexOf(firstLetter.toString()) + row;
-                    result = getAvailibleSuffixes(firstLetter, "", spaceLeft, hand, result, col, newRow, orientation);
+                    result = getAvailableSuffixes(firstLetter, "", spaceLeft, hand, result, col, newRow, orientation);
                 } else {
                     final int newCol = word.getScrabbleWord().indexOf(firstLetter.toString()) + col;
-                    result = getAvailibleSuffixes(firstLetter, "", spaceLeft, hand, result, newCol, row, orientation);
+                    result = getAvailableSuffixes(firstLetter, "", spaceLeft, hand, result, newCol, row, orientation);
                 }
             }
         }
         return result;
     }
     /**
+     * Given a char, it returns it's index in alphabet. Assumes char is A-Z
      * @param c
      * @return
      */
@@ -156,7 +249,18 @@ public class Trie {
         return index;
     }
     /**
-     * 
+     * if current entry is the end of a word
+              check to see if its more points than the currentResult
+              if it is, currentResult = entry -> ScrabbleWord
+          For each available character c, convert c to it's index in the alphabet array
+              This uses hashing to make this constant time
+              find the entry next at the same index in currentEntry.children
+              Remove c from availableCharacters
+              if next entry is the end of a word
+                  check to see if its more points than the currentResult
+                  if it is, currentResult = entry -> ScrabbleWord
+              recurse using nextEntry, the new availableCharacters, and the current best result
+          return the best result
      * @param currentEntry
      * @param currentString
      * @param spaceLeft
@@ -167,7 +271,7 @@ public class Trie {
      * @param orientation
      * @return
      */
-    private ScrabbleWord getAvailibleSuffixes(final Entry currentEntry, final String currentString, final int spaceLeft,
+    private ScrabbleWord getAvailableSuffixes(final Entry currentEntry, final String currentString, final int spaceLeft,
 	                                  final char[] hand, final ScrabbleWord currentResult,
 	                                  final int startCol, final int startRow, final char orientation) {
 	    ScrabbleWord result = currentResult;
@@ -192,7 +296,7 @@ public class Trie {
 	                }
 	                final Entry newEntry = currentEntry.children[getIndex(c)];
 	                if (newEntry != null) {
-	                    result = getAvailibleSuffixes(newEntry, currentString + currentEntry, spaceLeft - 1, newHand, result, startCol, startRow, orientation);    
+	                    result = getAvailableSuffixes(newEntry, currentString + currentEntry, spaceLeft - 1, newHand, result, startCol, startRow, orientation);    
 	                }
 	            }
 	        }
