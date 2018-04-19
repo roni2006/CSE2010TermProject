@@ -316,7 +316,7 @@ public class Trie {
 	    if (spaceLeft > 1) {
 	        for (int i = 0; i < hand.length; i++) {
 	            final char c = hand[i];
-	            if (c != '!' && c != '_') {
+	            if (c != '!') {
 	                char[] newHand = modifiedHand(hand, i);
 	                if (c == '_') {
 	                    for (int j = 0; j < currentEntry.children.length; j++) {
