@@ -206,22 +206,26 @@ public class EvalScrabblePlayer {
         long endTime = System.nanoTime();
         //System.out.println(endTime - startTime);
         if ((endTime - startTime)/1.0E9 > 1)  // longer than 1 second
-            {
+        {
             System.err.println("player.getScrabbleWord() exceeded 1 second");
             System.exit(-1);
-            }
-        if (endTime - startTime == 0) {
-            numZeroTimes++;
         }
         totalElapsedTime += (endTime - startTime);
 
         //Calculate points for the words found
-        totalPoints += calculatePoints(playerWord, initialWord, board, availableLetters, dictionary);
+        final int points = calculatePoints(playerWord, initialWord, board, availableLetters, dictionary);
+        totalPoints += points;
+       /* if (points == 0) {
+            numZeroTimes++;
+            System.out.println(availableLetters);
+            System.out.println(initialWord);
+            System.out.println(playerWord);
+        } */
         //System.out.println("Total: " + totalPoints);
         }
-   // System.out.println(numZeroTimes / numOfGames);
-        reportPerformance(totalPoints, totalElapsedTime, peakMemoryUsage(), 
-                          numOfGames);
+    //System.out.println(numZeroTimes);
+    reportPerformance(totalPoints, totalElapsedTime, peakMemoryUsage(), 
+            numOfGames);
     }
 
 
