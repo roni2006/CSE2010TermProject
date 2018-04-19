@@ -215,12 +215,12 @@ public class EvalScrabblePlayer {
         //Calculate points for the words found
         final int points = calculatePoints(playerWord, initialWord, board, availableLetters, dictionary);
         totalPoints += points;
-       /* if (points == 0) {
+        if (points == 0) {
             numZeroTimes++;
             System.out.println(availableLetters);
             System.out.println(initialWord);
             System.out.println(playerWord);
-        } */
+        }
         //System.out.println("Total: " + totalPoints);
         }
     //System.out.println(numZeroTimes);

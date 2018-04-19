@@ -137,8 +137,6 @@ public class Trie {
      * @return
      */
 	public ScrabbleWord getBestWord(final ScrabbleWord word, final char[] hand) {
-	    //System.out.println(word);
-	    //System.out.println(hand);
 	    ScrabbleWord result = new ScrabbleWord();
 	    final int col = word.getStartColumn();
 	    final int row = word.getStartRow();
@@ -146,12 +144,13 @@ public class Trie {
 	    //Case 1: Best result is perpendicular, starting with a letter already on the board
 	    result = startOnBoard(word, hand, root, "", result);
 	    //System.out.println(result);
+	    if (result.getPoints() > 10) {
+	        return result;
+	    }
 	    if (originalIsHorizontal) {
-	        //Case 1: Best result is perpendicular, starting with a letter already on the board
-	        final int spaceAbove = row;
-	        result = generatePrefixes(hand, spaceAbove, word, "", root, result);
-	        //System.out.println(result);
-	        //Case 2: Best result is an extension of the word on board (suffix)
+	        //Case 2: Word is perpendicular, with a prefix
+	        result = getPrefixes(hand, row, word, "", root, result);
+	        //Case 3: Best result is an extension of the word on board (suffix)
 	        if (word.getScrabbleWord().length() > 1) { //following only works if word is at least two char long
 	            final int spaceRight = BOARD_SIZE - (col + word.getScrabbleWord().length()); //space right of word
 	            result = extendsBoard(word, hand, result, col, row, 'h', spaceRight);
@@ -159,14 +158,12 @@ public class Trie {
 	    } else {
 	        //Case 2
 	        final int spaceLeft = col;
-            result = generatePrefixes(hand, spaceLeft, word, "", root, result);
+            result = getPrefixes(hand, spaceLeft, word, "", root, result);
+            //Case 3
 	        if (word.getScrabbleWord().length() > 1) {
 	            final int spaceUnder = BOARD_SIZE - (row + word.getScrabbleWord().length()); //space under of word
 	            result = extendsBoard(word, hand, result, col, row, 'v', spaceUnder);
 	        }
-	    }
-	    if (result == null) {
-	        return word;
 	    }
 	    return result;
 	}
@@ -213,7 +210,7 @@ public class Trie {
         }
         return null;
     }
-    private ScrabbleWord generatePrefixes(final char[] hand, final int spaceBefore, final ScrabbleWord word, final String str,
+    private ScrabbleWord getPrefixes(final char[] hand, final int spaceBefore, final ScrabbleWord word, final String str,
                                                 final Entry current, ScrabbleWord result) {
         //System.out.println(str);
         if (spaceBefore == 0) {
@@ -230,7 +227,7 @@ public class Trie {
                     final char[] newHand = modifiedHand(hand, i);
                     final Entry next = current.children[getIndex(hand[i])];
                     if (next != null ) {
-                        result = generatePrefixes(newHand, spaceBefore - 1, word, str + next, next, result);
+                        result = getPrefixes(newHand, spaceBefore - 1, word, str + next, next, result);
                     }
                 }
             }
