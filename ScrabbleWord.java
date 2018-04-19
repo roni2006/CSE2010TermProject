@@ -142,8 +142,13 @@ public class ScrabbleWord implements Comparable<ScrabbleWord> {
         final int startRow = getStartRow();
         
         for (int i = 0; i < word.length(); i++) {
-            final byte element = (byte) Character.hashCode(word.charAt(i));
-            final int index = (element + OFFSET) % (LETTERS.length - 1) + 1;
+            final int index;
+            if (word.charAt(i) == '_') {
+                index = 0;
+            } else {
+                final byte element = (byte) Character.hashCode(word.charAt(i));
+                index = (element + OFFSET) % (LETTERS.length - 1) + 1;
+            }
             String bonusFromBoard = "";
             
             // find the score for this letter

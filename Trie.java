@@ -1,3 +1,5 @@
+import java.util.LinkedList;
+
 /*
   Authors (group members):Javier Munoz, Sung-Jun Baek, Thanart Pandey
   Email addresses of group members: jmunoz2014@my.fit.edu, sbaek2015@my.fit.edu, tpandey2017@my.fit.edu
@@ -53,7 +55,7 @@ public class Trie {
      *          getEntryWithPrefix: returns the entry with the given prefix
      */
     private static final byte OFFSET = 13; //(Char.hash + OFFSET) % ALPHABET.length = alphabet.indexOf(Char)
-    private static final char[] ALPHABET = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+    public static final char[] ALPHABET = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
                                             'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
                                             'U', 'V', 'W', 'X', 'Y', 'Z'};
     private static final int BOARD_SIZE = 15;
@@ -142,20 +144,20 @@ public class Trie {
 	    if (originalIsHorizontal) {
 	        //Case 1: Best result is perpendicular, starting with a letter already on the board
 	        final int spaceUnder = BOARD_SIZE - (row + 1); //Space left under the word
-	        result = wordStartsWithLetterOnBoard(word, hand, result, col, row, 'v', spaceUnder);
+	        result = startOnBoard(word, hand, result, col, row, 'v', spaceUnder);
 	        //Case 2: Best result is an extension of the word on board (suffix)
 	        if (word.getScrabbleWord().length() > 1) { //following only works if word is at least two char long
 	            final int spaceRight = BOARD_SIZE - (col + word.getScrabbleWord().length()); //space right of word
-	            result = resultExtendsWordOnBoard(word, hand, result, col, row, 'h', spaceRight);
+	            result = extendsBoard(word, hand, result, col, row, 'h', spaceRight);
 	        }
 	    } else {
 	        //Case 1
 	        final int spaceRight = BOARD_SIZE - (col + 1);//Space right of word
-	        result = wordStartsWithLetterOnBoard(word, hand, result, col, row, 'h', spaceRight);
+	        result = startOnBoard(word, hand, result, col, row, 'h', spaceRight);
 	        //Case 2
 	        if (word.getScrabbleWord().length() > 1) {
 	            final int spaceUnder = BOARD_SIZE - (row + word.getScrabbleWord().length()); //space under of word
-	            result = resultExtendsWordOnBoard(word, hand, result, col, row, 'v', spaceUnder);
+	            result = extendsBoard(word, hand, result, col, row, 'v', spaceUnder);
 	        }
 	    }
 	    if (result == null) {
@@ -174,12 +176,11 @@ public class Trie {
 	 * @param spaceLeft
 	 * @return
 	 */
-    private ScrabbleWord resultExtendsWordOnBoard(ScrabbleWord word, char[] hand, ScrabbleWord result, int col, int row,
+    private ScrabbleWord extendsBoard(ScrabbleWord word, char[] hand, ScrabbleWord result, int col, int row,
             char orientation, int spaceLeft) {
         Entry letterOnBoard = getEntryWithPrefix(word.getScrabbleWord(), root); //Entry at end of word on board
-        final String prefix = word.getScrabbleWord().substring(0, word.getScrabbleWord().length() - 1);//Everything except the last letter
         if (letterOnBoard != null) {
-            ScrabbleWord possibleResult = getAvailableSuffixes(letterOnBoard, prefix, spaceLeft, hand, result, col, row, orientation);
+            ScrabbleWord possibleResult = getAvailableSuffixes(letterOnBoard, word.getScrabbleWord(), spaceLeft, hand, result, col, row, orientation);
             if (possibleResult == null || possibleResult.equals(word)) {
                 return result;
             } else {
@@ -206,7 +207,18 @@ public class Trie {
             }
         }
         return null;
-    }
+    } /*
+    private LinkedList<String> generatePrefixes(final char[] hand, final int spaceBefore, final ScrabbleWord word,
+                                                final String str, final LinkedList<String> list) {
+        if (spaceBefore == 0) {
+            return list;
+        } else {
+            for (int i = 0; i < hand.length; i++) {
+                if (jand)
+            }
+        }
+        return null;
+    } */
     /**
      * Finds the best word that starts with a letter already on board
      * @param word
@@ -218,7 +230,7 @@ public class Trie {
      * @param spaceLeft
      * @return
      */
-    private ScrabbleWord wordStartsWithLetterOnBoard(final ScrabbleWord word, final char[] hand,
+    private ScrabbleWord startOnBoard(final ScrabbleWord word, final char[] hand,
                                                      ScrabbleWord result, final int col, final int row,
                                                      final char orientation, final int spaceLeft) {
         final String wordOnBoard = word.getScrabbleWord();
@@ -229,10 +241,10 @@ public class Trie {
             if (root.children[index] != null) {
                 if (orientation == 'h') {
                     final int newRow = word.getScrabbleWord().indexOf(firstLetter.toString()) + row;
-                    result = getAvailableSuffixes(firstLetter, "", spaceLeft, hand, result, col, newRow, orientation);
+                    result = getAvailableSuffixes(firstLetter, firstLetter.toString(), spaceLeft, hand, result, col, newRow, orientation);
                 } else {
                     final int newCol = word.getScrabbleWord().indexOf(firstLetter.toString()) + col;
-                    result = getAvailableSuffixes(firstLetter, "", spaceLeft, hand, result, newCol, row, orientation);
+                    result = getAvailableSuffixes(firstLetter, firstLetter.toString(), spaceLeft, hand, result, newCol, row, orientation);
                 }
             }
         }
@@ -276,7 +288,7 @@ public class Trie {
 	                                  final int startCol, final int startRow, final char orientation) {
 	    ScrabbleWord result = currentResult;
         if (currentEntry.isWordEnd) {
-	        final ScrabbleWord newWord = new ScrabbleWord(currentString + currentEntry, startRow, startCol, orientation);
+	        final ScrabbleWord newWord = new ScrabbleWord(currentString, startRow, startCol, orientation);
 	        if (result == null) {
 	            result = newWord;
 	        } else if (newWord.compareTo(result) < 0) { 
@@ -286,7 +298,7 @@ public class Trie {
 	    if (spaceLeft > 1) {
 	        for (int i = 0; i < hand.length; i++) {
 	            final char c = hand[i];
-	            if (c != '!' && c != '_') {
+	            if (c != '!') {
 	                char[] newHand = new char[hand.length];
 	                for (int j = 0; j < hand.length; j++) {
 	                    newHand[j] = hand[j];
@@ -294,9 +306,18 @@ public class Trie {
 	                        newHand[j] = '!';
 	                    }
 	                }
-	                final Entry newEntry = currentEntry.children[getIndex(c)];
-	                if (newEntry != null) {
-	                    result = getAvailableSuffixes(newEntry, currentString + currentEntry, spaceLeft - 1, newHand, result, startCol, startRow, orientation);    
+	                if (c == '_') {
+	                    for (int j = 0; j < currentEntry.children.length; j++) {
+	                        final Entry newEntry = currentEntry.children[j];
+	                        if (newEntry != null) {
+	                            result = getAvailableSuffixes(newEntry, currentString + "_", spaceLeft - 1, newHand, result, startCol, startRow, orientation);    
+	                        }
+	                    }
+	                } else {
+	                    final Entry newEntry = currentEntry.children[getIndex(c)];
+                        if (newEntry != null) {
+                            result = getAvailableSuffixes(newEntry, currentString + newEntry, spaceLeft - 1, newHand, result, startCol, startRow, orientation);    
+                        }
 	                }
 	            }
 	        }

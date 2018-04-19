@@ -141,8 +141,8 @@ public class EvalScrabblePlayer {
      */
     private static ScrabblePlayer createScrabblePlayer(String dictFile) 
     {
-        System.out.println("Used memory before pre-processing in bytes: " + peakMemoryUsage());
         //Preprocessing in ScrabblePlayer
+        System.out.println("Memory BEFORE ScrabblePlayer is Constructed: " + peakMemoryUsage());
         System.out.println("Preprocessing in ScrabblePlayer...");
 
         long startPreProcTime = bean.getCurrentThreadCpuTime();
@@ -180,58 +180,48 @@ public class EvalScrabblePlayer {
     char[][]  board = new char[15][15];
     char[]    availableLetters = new char[7]; 
     Random    rand = new Random(seed);
-    double zeroCount = 0;
-    Runtime runtime = Runtime.getRuntime();
-    long memory = 0;
-    long usedMemoryBefore = runtime.totalMemory() - runtime.freeMemory();
+    double numZeroTimes = 0.0;
     for (int game = 0; game < numOfGames; game++)
-    {
+        {
         //to do: initialize the board with spaces
         //       add a random word of at most length 7 from the dictionary
         ScrabbleWord initialWord = generateBoard(board, dictionary, rand);
-
+        
         //to do: Randomly pick 7 letters according to the distribution of letters in
         //       the wiki page in the assignment
         generateAvailableLetters(availableLetters, rand);
         //System.out.printf("available Letters: %s%n", new String(availableLetters));
-
+                
         // the player might change board and/or availableLetters, give the player a clone
         char[][] boardClone = board.clone();
         char[]   availableLettersClone = availableLetters.clone();
 
         //Calculate the time taken to find the words on the board
         //long startTime = bean.getCurrentThreadCpuTime();
-        
         long startTime = System.nanoTime();
-
         //Play the game of Scrabble and find the words
         ScrabbleWord playerWord = player.getScrabbleWord(boardClone, availableLettersClone);
-
+        
         //long endTime = bean.getCurrentThreadCpuTime();
         long endTime = System.nanoTime();
         //System.out.println(endTime - startTime);
-        if ((endTime - startTime)/1.0E9 > 100)  // longer than 1 second
-        {
+        if ((endTime - startTime)/1.0E9 > 1)  // longer than 1 second
+            {
             System.err.println("player.getScrabbleWord() exceeded 1 second");
             System.exit(-1);
+            }
+        if (endTime - startTime == 0) {
+            numZeroTimes++;
         }
         totalElapsedTime += (endTime - startTime);
 
-        if ((endTime - startTime) == 0) {
-            zeroCount++;
-        }
         //Calculate points for the words found
-        if (!playerWord.equals(initialWord)) {
-            totalPoints += calculatePoints(playerWord, initialWord, board, availableLetters, dictionary);
-        }
+        totalPoints += calculatePoints(playerWord, initialWord, board, availableLetters, dictionary);
         //System.out.println("Total: " + totalPoints);
-    }
-    long usedMemoryAfter = runtime.totalMemory() - runtime.freeMemory();
-    //System.out.println(zeroCount / numOfGames);
-    memory += (usedMemoryAfter - usedMemoryBefore);
-    System.out.println("Memory: " + memory / numOfGames);
-    reportPerformance(totalPoints, totalElapsedTime, peakMemoryUsage(), 
-            numOfGames);
+        }
+   // System.out.println(numZeroTimes / numOfGames);
+        reportPerformance(totalPoints, totalElapsedTime, peakMemoryUsage(), 
+                          numOfGames);
     }
 
 
@@ -379,7 +369,7 @@ public class EvalScrabblePlayer {
         if (memory <= 0)
             memory = 1;
         
-        double avgPoints = totalPoints * 1.0 / (numOfGames * 1.0);
+        double avgPoints = (totalPoints * 1.0) / numOfGames;
         System.out.printf("Average Points: %.4f\n", avgPoints);
 
         System.out.println("totalElapsedTime " + totalElapsedTime);
@@ -548,6 +538,13 @@ public class EvalScrabblePlayer {
         // Before checking, must remove the intersection part of the playWord and the starting word        
         // remove the intersection part
         String additionLetters = findAdditionLetters(initialWord, playWord);
+        
+        // if empty string return
+        if (additionLetters.length() == 0)
+        {
+            // invalid, because playerWord = initialWord
+            return null;
+        }
         
         // use arraylist to store the letters
         ArrayList<String> playerLetters = new ArrayList<String>();        
@@ -775,9 +772,7 @@ public class EvalScrabblePlayer {
         ScrabbleWord newWord;
         String playW = playWord.getScrabbleWord();
         String initialW = initialWord.getScrabbleWord();
-        if (playW.equals(initialW)) {
-            return null;
-        }
+        
         // start row and column for the playWord
         int pStartRow = playWord.getStartRow(), pStartCol = playWord.getStartColumn();
         
