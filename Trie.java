@@ -149,6 +149,7 @@ public class Trie {
 	    }
 	    if (originalIsHorizontal) {
 	        //Case 2: Word is perpendicular, with a prefix
+	        
 	        result = getPrefixes(hand, row, word, "", root, result);
 	        //Case 3: Best result is an extension of the word on board (suffix)
 	        if (word.getScrabbleWord().length() > 1) { //following only works if word is at least two char long
@@ -157,8 +158,7 @@ public class Trie {
 	        }
 	    } else {
 	        //Case 2
-	        final int spaceLeft = col;
-            result = getPrefixes(hand, spaceLeft, word, "", root, result);
+            result = getPrefixes(hand, col, word, "", root, result);
             //Case 3
 	        if (word.getScrabbleWord().length() > 1) {
 	            final int spaceUnder = BOARD_SIZE - (row + word.getScrabbleWord().length()); //space under of word
@@ -212,16 +212,11 @@ public class Trie {
     }
     private ScrabbleWord getPrefixes(final char[] hand, final int spaceBefore, final ScrabbleWord word, final String str,
                                                 final Entry current, ScrabbleWord result) {
-        //System.out.println(str);
         if (spaceBefore == 0) {
             result = startOnBoard(word, hand, current, str, result);
+            return result;
         } else {
-            for (int i = 0; i < word.getScrabbleWord().length(); i++) {
-                final Entry boardLetter = current.children[getIndex(word.getScrabbleWord().charAt(i))];
-                if (boardLetter != null) {
-                    result = startOnBoard(word, hand, current, str, result);
-                }
-            }
+            result = startOnBoard(word, hand, current, str, result);
             for (int i = 0; i < hand.length; i++) {
                 if (hand[i] != '!' && hand[i] != '_') {
                     final char[] newHand = modifiedHand(hand, i);
@@ -257,11 +252,17 @@ public class Trie {
                     final int spaceLeft = BOARD_SIZE - (word.getStartColumn() + 1);
                     final int newRow = word.getScrabbleWord().indexOf(firstLetter.toString()) + word.getStartRow();
                     final int newCol = word.getStartColumn() - prefix.length();
+                    if (newCol < 0) {
+                        return result;
+                    }
                     result = getSuffixes(firstLetter, prefix + firstLetter, spaceLeft, hand, result, newCol, newRow, 'h');
                 } else {
                     final int spaceLeft = BOARD_SIZE - (word.getStartRow() + 1);
                     final int newCol = word.getScrabbleWord().indexOf(firstLetter.toString()) + word.getStartColumn();
                     final int newRow = word.getStartRow() - prefix.length();
+                    if (newRow < 0) {
+                        return result;
+                    }
                     result = getSuffixes(firstLetter, prefix + firstLetter, spaceLeft, hand, result, newCol, newRow, 'v');
                 }
             }

@@ -183,6 +183,7 @@ public class EvalScrabblePlayer {
     double numZeroTimes = 0.0;
     for (int game = 0; game < numOfGames; game++)
         {
+        System.out.println(game);
         //to do: initialize the board with spaces
         //       add a random word of at most length 7 from the dictionary
         ScrabbleWord initialWord = generateBoard(board, dictionary, rand);
@@ -216,14 +217,16 @@ public class EvalScrabblePlayer {
         final int points = calculatePoints(playerWord, initialWord, board, availableLetters, dictionary);
         totalPoints += points;
         if (points == 0) {
-            numZeroTimes++;
-            System.out.println(availableLetters);
-            System.out.println(initialWord);
-            System.out.println(playerWord);
+            if (!initialWord.getScrabbleWord().toUpperCase().equals("Q")) {
+                numZeroTimes++;
+                System.out.println(initialWord);
+                System.out.println(availableLetters);
+                System.out.println(playerWord);
+            }
         }
         //System.out.println("Total: " + totalPoints);
         }
-    //System.out.println(numZeroTimes);
+    System.out.println(numZeroTimes/numOfGames);
     reportPerformance(totalPoints, totalElapsedTime, peakMemoryUsage(), 
             numOfGames);
     }
