@@ -225,7 +225,7 @@ public class EvalScrabblePlayer {
         }
         //System.out.println("Total: " + totalPoints);
     }
-    System.out.println("TIME: " + Trie.TOTAL_TIME/numOfGames/1e9);
+    System.out.println("TIME: " + Trie.TOTAL_TIME);
     //System.out.println(numZeroTimes/numOfGames);
     reportPerformance(totalPoints, totalElapsedTime, peakMemoryUsage(), 
             numOfGames);

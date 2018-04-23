@@ -155,7 +155,7 @@ public class Trie {
 	        if (word.getScrabbleWord().length() > 1) { //following only works if word is at least two char long
 	            final int spaceRight = BOARD_SIZE - (col + word.getScrabbleWord().length()); //space right of word
 	            result = extendsBoard(word, hand, result, col, row, 'h', spaceRight);
-	        }
+	        } 
 	    } else {
 	        //Case 2
             result = getPrefixes(hand, col, word, "", root, result);
@@ -163,7 +163,7 @@ public class Trie {
 	        if (word.getScrabbleWord().length() > 1) {
 	            final int spaceUnder = BOARD_SIZE - (row + word.getScrabbleWord().length()); //space under of word
 	            result = extendsBoard(word, hand, result, col, row, 'v', spaceUnder);
-	        }
+	        } 
 	    }
 	    return result;
 	}
@@ -221,18 +221,9 @@ public class Trie {
                 if (hand[i] != '!' && hand[i] != '_') {
                     final char c = hand[i];
                     hand[i] = '!';
-                    if (c == '_') {
-                        for (int j = 0; j < current.children.length; j++) {
-                            final Entry newEntry = current.children[j];
-                            if (newEntry != null) {
-                                result = getPrefixes(hand, spaceBefore - 1, word, str + "_", newEntry, result);    
-                            }
-                        }
-                    } else {
-                        final Entry next = current.children[getIndex(c)];
-                        if (next != null ) {
-                            result = getPrefixes(hand, spaceBefore - 1, word, str + next, next, result);
-                        }
+                    final Entry next = current.children[getIndex(c)];
+                    if (next != null ) {
+                        result = getPrefixes(hand, spaceBefore - 1, word, str + next, next, result);
                     }
                     hand[i] = c;
                 }
@@ -330,18 +321,9 @@ public class Trie {
 	            final char c = hand[i];
 	            if (c != '!' && c != '_') {
 	                hand[i] = '!';
-	                if (c == '_') {
-	                    for (int j = 0; j < currentEntry.children.length; j++) {
-	                        final Entry newEntry = currentEntry.children[j];
-	                        if (newEntry != null) {
-	                            result = getSuffixes(newEntry, currentString + "_", spaceLeft - 1, hand, result, startCol, startRow, orientation);    
-	                        }
-	                    }
-	                } else {
-	                    final Entry newEntry = currentEntry.children[getIndex(c)];
-                        if (newEntry != null) {
-                            result = getSuffixes(newEntry, currentString + newEntry, spaceLeft - 1, hand, result, startCol, startRow, orientation);    
-                        }
+	                final Entry newEntry = currentEntry.children[getIndex(c)];
+	                if (newEntry != null) {
+	                    result = getSuffixes(newEntry, currentString + newEntry, spaceLeft - 1, hand, result, startCol, startRow, orientation);    
 	                }
 	                hand[i] = c;
 	            }
