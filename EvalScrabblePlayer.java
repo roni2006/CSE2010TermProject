@@ -212,7 +212,6 @@ public class EvalScrabblePlayer {
             System.exit(-1);
         }
         totalElapsedTime += (endTime - startTime);
-
         //Calculate points for the words found
         final int points = calculatePoints(playerWord, initialWord, board, availableLetters, dictionary);
         totalPoints += points;
@@ -226,6 +225,7 @@ public class EvalScrabblePlayer {
         }
         //System.out.println("Total: " + totalPoints);
     }
+    System.out.println("TIME: " + Trie.TOTAL_TIME/numOfGames/1e9);
     //System.out.println(numZeroTimes/numOfGames);
     reportPerformance(totalPoints, totalElapsedTime, peakMemoryUsage(), 
             numOfGames);

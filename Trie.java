@@ -59,6 +59,7 @@ public class Trie {
                                             'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
                                             'U', 'V', 'W', 'X', 'Y', 'Z'};
     private static final int BOARD_SIZE = 15;
+    public static long TOTAL_TIME = 0;
     private static class Entry {
         /*
          * Description:
@@ -141,15 +142,14 @@ public class Trie {
 	    final int col = word.getStartColumn();
 	    final int row = word.getStartRow();
 	    final boolean originalIsHorizontal = word.getOrientation() == 'h'; //is the original word horizontal?
+
 	    //Case 1: Best result is perpendicular, starting with a letter already on the board
 	    result = startOnBoard(word, hand, root, "", result);
-	    //System.out.println(result);
 	    if (result.getPoints() > 0) {
 	        return result;
 	    }
 	    if (originalIsHorizontal) {
 	        //Case 2: Word is perpendicular, with a prefix
-	        
 	        result = getPrefixes(hand, row, word, "", root, result);
 	        //Case 3: Best result is an extension of the word on board (suffix)
 	        if (word.getScrabbleWord().length() > 1) { //following only works if word is at least two char long
@@ -219,20 +219,22 @@ public class Trie {
             result = startOnBoard(word, hand, current, str, result);
             for (int i = 0; i < hand.length; i++) {
                 if (hand[i] != '!' && hand[i] != '_') {
-                    final char[] newHand = modifiedHand(hand, i);
-                    if (hand[i] == '_') {
+                    final char c = hand[i];
+                    hand[i] = '!';
+                    if (c == '_') {
                         for (int j = 0; j < current.children.length; j++) {
                             final Entry newEntry = current.children[j];
                             if (newEntry != null) {
-                                result = getPrefixes(newHand, spaceBefore - 1, word, str + "_", newEntry, result);    
+                                result = getPrefixes(hand, spaceBefore - 1, word, str + "_", newEntry, result);    
                             }
                         }
                     } else {
-                        final Entry next = current.children[getIndex(hand[i])];
+                        final Entry next = current.children[getIndex(c)];
                         if (next != null ) {
-                            result = getPrefixes(newHand, spaceBefore - 1, word, str + next, next, result);
+                            result = getPrefixes(hand, spaceBefore - 1, word, str + next, next, result);
                         }
                     }
+                    hand[i] = c;
                 }
             }
         }
@@ -327,39 +329,24 @@ public class Trie {
 	        for (int i = 0; i < hand.length; i++) {
 	            final char c = hand[i];
 	            if (c != '!' && c != '_') {
-	                char[] newHand = modifiedHand(hand, i);
+	                hand[i] = '!';
 	                if (c == '_') {
 	                    for (int j = 0; j < currentEntry.children.length; j++) {
 	                        final Entry newEntry = currentEntry.children[j];
 	                        if (newEntry != null) {
-	                            result = getSuffixes(newEntry, currentString + "_", spaceLeft - 1, newHand, result, startCol, startRow, orientation);    
+	                            result = getSuffixes(newEntry, currentString + "_", spaceLeft - 1, hand, result, startCol, startRow, orientation);    
 	                        }
 	                    }
 	                } else {
 	                    final Entry newEntry = currentEntry.children[getIndex(c)];
                         if (newEntry != null) {
-                            result = getSuffixes(newEntry, currentString + newEntry, spaceLeft - 1, newHand, result, startCol, startRow, orientation);    
+                            result = getSuffixes(newEntry, currentString + newEntry, spaceLeft - 1, hand, result, startCol, startRow, orientation);    
                         }
 	                }
+	                hand[i] = c;
 	            }
 	        }
 	    }
 	    return result;
 	}
-    /**
-     * i: index of character to be 'removed'
-     * @param hand
-     * @param i
-     * @return
-     */
-    private char[] modifiedHand(final char[] hand, final int index) {
-        char[] newHand = new char[hand.length];
-        for (int j = 0; j < hand.length; j++) {
-            newHand[j] = hand[j];
-            if (j == index) {
-                newHand[j] = '!';
-            }
-        }
-        return newHand;
-    }
 }
