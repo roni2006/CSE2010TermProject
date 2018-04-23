@@ -70,7 +70,7 @@ public class EvalScrabblePlayer {
      
      "51","91","15","55","95","135","19","59","99","139","513","913",      // triple letter score
      
-     "11","22","33","44","113","212","311","410","131","122","113",        // double word score
+     "11","22","33","44", "77", "113","212","311","410","131","122","113",        // double word score
      "104","1010","1111","1212","1313",                                    // double word score
      
      "00","70","07","014","140","147","714","1414"};                       // triple word score
@@ -81,7 +81,7 @@ public class EvalScrabblePlayer {
       
       "3L","3L","3L","3L","3L","3L","3L","3L","3L","3L","3L","3L",
       
-      "2W","2W","2W","2W","2W","2W","2W","2W","2W","2W","2W",
+      "2W","2W","2W","2W","2W","2W","2W","2W","2W","2W","2W","2W",
       "2W","2W","2W","2W","2W",
       
       "3W","3W","3W","3W","3W","3W","3W","3W"};
@@ -108,7 +108,7 @@ public class EvalScrabblePlayer {
         }
 
         //Default number of games if third argument is not passed
-        int numOfGames = 1;
+        int numOfGames = 100;
         if (args.length == 3) {
             numOfGames = Integer.parseInt(args[2]);
         }
@@ -182,17 +182,17 @@ public class EvalScrabblePlayer {
     Random    rand = new Random(seed);
     double numZeroTimes = 0.0;
     for (int game = 0; game < numOfGames; game++)
-        {
-        System.out.println(game);
+    {
+        //System.out.println(game);
         //to do: initialize the board with spaces
         //       add a random word of at most length 7 from the dictionary
         ScrabbleWord initialWord = generateBoard(board, dictionary, rand);
-        
+
         //to do: Randomly pick 7 letters according to the distribution of letters in
         //       the wiki page in the assignment
         generateAvailableLetters(availableLetters, rand);
         //System.out.printf("available Letters: %s%n", new String(availableLetters));
-                
+
         // the player might change board and/or availableLetters, give the player a clone
         char[][] boardClone = board.clone();
         char[]   availableLettersClone = availableLetters.clone();
@@ -202,7 +202,7 @@ public class EvalScrabblePlayer {
         long startTime = System.nanoTime();
         //Play the game of Scrabble and find the words
         ScrabbleWord playerWord = player.getScrabbleWord(boardClone, availableLettersClone);
-        
+
         //long endTime = bean.getCurrentThreadCpuTime();
         long endTime = System.nanoTime();
         //System.out.println(endTime - startTime);
@@ -225,8 +225,8 @@ public class EvalScrabblePlayer {
             }
         }
         //System.out.println("Total: " + totalPoints);
-        }
-    System.out.println(numZeroTimes/numOfGames);
+    }
+    //System.out.println(numZeroTimes/numOfGames);
     reportPerformance(totalPoints, totalElapsedTime, peakMemoryUsage(), 
             numOfGames);
     }

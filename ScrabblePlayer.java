@@ -79,43 +79,9 @@ public class ScrabblePlayer {
      */
     public ScrabbleWord getScrabbleWord(final char[][] board, final char[] availableLetters) {
         final ScrabbleWord wordOnBoard = findWord(board);
-        //System.out.println(wordOnBoard);
-        //System.out.println(availableLetters);
         final ScrabbleWord result = tree.getBestWord(wordOnBoard, availableLetters);
-        //System.out.println(result);
         return result;
     }
-    /* WITH WILDCARD Performance drop from .823 to .493
-     *     public ScrabbleWord getScrabbleWord(final char[][] board, final char[] availableLetters) {
-        final ScrabbleWord wordOnBoard = findWord(board);
-        //System.out.println(wordOnBoard);
-        //System.out.println(availableLetters);
-        final int wildcard = wildcardIndex(availableLetters);
-        if(wildcard != -1) {
-            ScrabbleWord result = wordOnBoard;
-            for (int i = 0; i < Trie.ALPHABET.length; i++) {
-                availableLetters[wildcard] = Trie.ALPHABET[i];
-                final ScrabbleWord temp = tree.getBestWord(wordOnBoard, availableLetters);
-                if (result.equals(wordOnBoard)) {
-                    result = temp;
-                } else if (temp.compareTo(result) > 0) {
-                    result = temp;
-                }
-            }
-            return result;
-        } else { 
-            return tree.getBestWord(wordOnBoard, availableLetters);
-       }
-    }
-    private int wildcardIndex(char[] availableLetters) {
-        for (int i = 0; i < availableLetters.length; i++) {
-            if (availableLetters[i] == '_') {
-                return i;
-            }
-        }
-        return -1;
-    }
-     */
     /**
      * Finds the word on the board by searching the board until it finds a character that is not
      * a space. Then it checks the orientation of the word.

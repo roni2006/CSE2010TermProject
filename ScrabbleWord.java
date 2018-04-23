@@ -31,32 +31,26 @@ public class ScrabbleWord implements Comparable<ScrabbleWord> {
     private static final int[] LETTERS_SCORE =
     {0, 1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3,
      1, 1, 3, 10,1, 1, 1, 1, 4, 4, 8, 4, 10};
-    
-    private static final String[] BONUS_POS =
-    {"30","110","62","82","03","73","143","26","66","86","126","37","117", // double letter score
-     "28","68","88","128","011","711","1411","612","812","314","1114",     // double letter score
-     
-     "51","91","15","55","95","135","19","59","99","139","513","913",      // triple letter score
-     
-     "11","22","33","44","113","212","311","410","131","122","113",        // double word score
-     "104","1010","1111","1212","1313",                                    // double word score
-     
-     "00","70","07","014","140","147","714","1414"};                       // triple word score
-     
-     private static final String[] BONUS =
-     {"2L","2L","2L","2L","2L","2L","2L","2L","2L","2L","2L","2L","2L",
-      "2L","2L","2L","2L","2L","2L","2L","2L","2L","2L","2L",
-      
-      "3L","3L","3L","3L","3L","3L","3L","3L","3L","3L","3L","3L",
-      
-      "2W","2W","2W","2W","2W","2W","2W","2W","2W","2W","2W",
-      "2W","2W","2W","2W","2W",
-      
-      "3W","3W","3W","3W","3W","3W","3W","3W"};
-    
+
+    private static final byte[][] BONUSES = {{4, 0, 0, 1, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 4}, //Holds the bonus for position [row][col]
+                                             {0, 3, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 3, 0},
+                                             {0, 0, 3, 0, 0, 0, 1, 0, 1, 0, 0, 0, 3, 0, 0},
+                                             {1, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 1},
+                                             {0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0},
+                                             {0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0},
+                                             {0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0},
+                                             {4, 0, 0, 1, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 4}, //EDIT MIDDLE TO 1 if he doesn't fix eval
+                                             {0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0},
+                                             {0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0},
+                                             {0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0},
+                                             {1, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 3, 0, 0, 1},
+                                             {0, 0, 3, 0, 0, 0, 1, 0, 1, 0, 0, 0, 3, 0, 0},
+                                             {0, 3, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 3, 0},
+                                             {4, 0, 0, 1, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 4}};
     private String  word;  // word
     private int     startRow, startCol;   // starting row and column of the word
     private char    orientation;  // v for vertical, h for horizontal
+    private int     points = -1; 
 
     /** 
      * default constructor with empty string at (0,0) horizontally
@@ -84,7 +78,6 @@ public class ScrabbleWord implements Comparable<ScrabbleWord> {
     orientation = myOrientation;
     }
 
-
     /**
      * return the word
      * @return the corresponding word
@@ -103,7 +96,6 @@ public class ScrabbleWord implements Comparable<ScrabbleWord> {
     return startRow;
     }
 
-
     /**
      * get the starting column
      * @return the starting column
@@ -112,7 +104,6 @@ public class ScrabbleWord implements Comparable<ScrabbleWord> {
     {
     return startCol;
     }
-
 
     /**
      * get the orientation
@@ -134,59 +125,53 @@ public class ScrabbleWord implements Comparable<ScrabbleWord> {
     /**
      * Determines the number of points a word is worth.
      * Much of the code is taken from EvalScrabblePlayer
+     *
+     * Saves the points to save time later
      * @return
      */
     public int getPoints() {
-        int totalScore = 0, bonusForWord = 1;
-        final int startColumn = getStartColumn();
-        final int startRow = getStartRow();
-        
-        for (int i = 0; i < word.length(); i++) {
-            final int index;
-            if (word.charAt(i) == '_') {
-                index = 0;
-            } else {
-                final byte element = (byte) Character.hashCode(word.charAt(i));
-                index = (element + OFFSET) % (LETTERS.length - 1) + 1;
-            }
-            String bonusFromBoard = "";
-            
-            // find the score for this letter
-            int letterPoints = LETTERS_SCORE[index];
-            final String position;
-            if (orientation == 'h') {
-                final int col = startColumn + i;
-                position = col + "" + startRow;
-            } else {
-                final int row = startRow + i;
-                position = startColumn + "" + row;
-            }
-            // find the bonus score on board if exist
-            for (int j = 0; j < BONUS_POS.length; j++) {
-                if (position.equals(BONUS_POS[j])) {
-                    bonusFromBoard = BONUS[j];
-                    break;
+        if (points != -1) { //If points is known
+            return points;
+        } else { //Calc points, then save points
+            int totalScore = 0, bonusForWord = 1;
+            final int startColumn = getStartColumn();
+            final int startRow = getStartRow();
+
+            for (int i = 0; i < word.length(); i++) {
+                final int index;
+                if (word.charAt(i) == '_') {
+                    index = 0;
+                } else {
+                    final byte element = (byte) Character.hashCode(word.charAt(i));
+                    index = (element + OFFSET) % (LETTERS.length - 1) + 1;
                 }
+
+                // find the score for this letter
+                int letterPoints = LETTERS_SCORE[index];
+
+                final byte bonus;
+                if (orientation == 'h') {
+                    bonus = BONUSES[startRow][startColumn + i]; //Find bonus for this position
+                } else {
+                    bonus = BONUSES[startRow + i][startColumn];
+                }
+                if (bonus == 1) {
+                    letterPoints *= 2;
+                } else if (bonus == 2) {
+                    letterPoints *= 3;
+                } else if (bonus == 3) {
+                    bonusForWord *= 2;
+                } else if (bonus == 4) {
+                    bonusForWord *= 3;
+                } 
+                // sum them up
+                totalScore += letterPoints;
             }
-            // double/triple letter score
-            if (bonusFromBoard.equals("2L")) {
-                letterPoints = letterPoints * 2;
-            } else if (bonusFromBoard.equals("3L")) {
-                letterPoints = letterPoints * 3;
-            // double/triple word score
-            } else if (bonusFromBoard.equals("2W")) {
-                bonusForWord = bonusForWord * 2;
-            } else if (bonusFromBoard.equals("3W")) {
-                bonusForWord = bonusForWord * 3;
-            } else {
-                bonusForWord = bonusForWord * 1;
-            }
-            // sum them up
-            totalScore += letterPoints;
+            // final score must multiply the bonus
+            totalScore = totalScore * bonusForWord;
+            points = totalScore;
+            return totalScore;
         }
-        // final score must multiply the bonus
-        totalScore = totalScore * bonusForWord;
-        return totalScore;
     }
     /**
      * For debugging

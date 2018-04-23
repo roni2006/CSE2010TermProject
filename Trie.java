@@ -144,7 +144,7 @@ public class Trie {
 	    //Case 1: Best result is perpendicular, starting with a letter already on the board
 	    result = startOnBoard(word, hand, root, "", result);
 	    //System.out.println(result);
-	    if (result.getPoints() > 10) {
+	    if (result.getPoints() > 0) {
 	        return result;
 	    }
 	    if (originalIsHorizontal) {
@@ -220,9 +220,18 @@ public class Trie {
             for (int i = 0; i < hand.length; i++) {
                 if (hand[i] != '!' && hand[i] != '_') {
                     final char[] newHand = modifiedHand(hand, i);
-                    final Entry next = current.children[getIndex(hand[i])];
-                    if (next != null ) {
-                        result = getPrefixes(newHand, spaceBefore - 1, word, str + next, next, result);
+                    if (hand[i] == '_') {
+                        for (int j = 0; j < current.children.length; j++) {
+                            final Entry newEntry = current.children[j];
+                            if (newEntry != null) {
+                                result = getPrefixes(newHand, spaceBefore - 1, word, str + "_", newEntry, result);    
+                            }
+                        }
+                    } else {
+                        final Entry next = current.children[getIndex(hand[i])];
+                        if (next != null ) {
+                            result = getPrefixes(newHand, spaceBefore - 1, word, str + next, next, result);
+                        }
                     }
                 }
             }
@@ -317,7 +326,7 @@ public class Trie {
 	    if (spaceLeft > 1) {
 	        for (int i = 0; i < hand.length; i++) {
 	            final char c = hand[i];
-	            if (c != '!') {
+	            if (c != '!' && c != '_') {
 	                char[] newHand = modifiedHand(hand, i);
 	                if (c == '_') {
 	                    for (int j = 0; j < currentEntry.children.length; j++) {
